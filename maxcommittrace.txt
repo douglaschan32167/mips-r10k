@@ -1,11 +1,11 @@
-I 07 07 07
-I 07 07 07
-I 07 07 07
-I 07 07 07
-I 07 07 07
-I 07 07 07
-I 07 07 07
-I 07 07 07
+I 04 05 07
+I 04 05 07
+M 04 05 07
+L 04 07 xx 00000000
+I 04 05 07
+I 04 05 07
+M 04 05 07
+L 04 07 xx 00000000
 I 01 01 01
 I 02 02 02
 I 03 03 03
@@ -17,3 +17,11 @@ I 09 09 09
 I 10 10 10
 I 11 11 11
 I 12 12 12
+
+This test is designed to test that
+a). Instructions must commit in order
+b). That only four instructions can commit per cycle.
+By repeatedly writing to the same register for the first 8 instructions, this assures us that only one instruction can commit at a time. Besides writing into the same register, these initial 8 instructions have no dependencies. These instructions are followed by 11 independent integer instructions with no dependencies. What should happen is that for the first seven cycles from when the first instruction reaches the commit stage, only one instruction should commit. Then, on the eighth such cycle, the last write to register 7 should commit, as well as the first three of the integer instructions. From then on, four instructions should commit per cycle (because the bottleneck of only committing one instruction per cycle should have given them time to execute), and then the instructions should all be commited after the 10th cycle, where the first cycle is counted as the cycle when instruction 1 reaches commit. With a five stage pipeline, the first instructruction should reach commit on cycle 5, so there should be 14 cycles total.
+There are only 15 integer instructions here, so we do not have to worry about filling up the integer instruction queue, which has 16 slots. 
+
+
