@@ -1,22 +1,22 @@
-I 04 05 07
-I 04 05 07
-M 04 05 07
-L 04 07 xx 00000000
-I 04 05 07
-I 04 05 07
-M 04 05 07
-L 04 07 xx 00000000
+I 07 07 07
+I 07 07 07
+I 07 07 07
+I 07 07 07
+I 07 07 07
+I 07 07 07
+I 07 07 07
+I 07 07 07
 I 01 01 01
-I 02 02 02
+M 02 02 02
 I 03 03 03
 I 04 04 04
 I 05 05 05
-I 06 06 06
+M 06 06 06
 I 08 08 08
 I 09 09 09
-I 10 10 10
-I 11 11 11
-I 12 12 12
+M 0a 0a 0a
+I 0b 0b 0b
+I 0c 0c 0c
 
 This test is designed to test that
 a). Instructions must commit in order
