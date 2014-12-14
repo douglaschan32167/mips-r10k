@@ -1,6 +1,8 @@
 package tracereader;
 
+import instruction.FpInstruction;
 import instruction.Instruction;
+import instruction.IntInstruction;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -15,7 +17,7 @@ public class TraceReader {
 	BufferedReader traceReader;
 	
 	public TraceReader(String tracePath) {
-		this.tracePath = tracePath;
+
 		try {
 			FileReader traceFileReader = new FileReader(tracePath);
 			this.traceReader = new BufferedReader(traceFileReader);
@@ -39,11 +41,12 @@ public class TraceReader {
 				String extraField = nextCmdArray.length == 4 ? "" : nextCmdArray[4];
 //				System.out.println(extraField);
 //				System.out.println("is the extra field");
+
 				Instruction nextInstruction = new Instruction(
 						nextCmdArray[0],
-						new Integer(nextCmdArray[1]),
-						new Integer(nextCmdArray[2]),
-						new Integer(nextCmdArray[3]),
+						Integer.parseInt(nextCmdArray[1], 16),
+						Integer.parseInt(nextCmdArray[2], 16),
+						Integer.parseInt(nextCmdArray[3], 16),
 						extraField,
 						lineNumber);
 				result.add(nextInstruction);

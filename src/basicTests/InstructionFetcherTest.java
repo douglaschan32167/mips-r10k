@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
+import instruction.FpQueue;
 import instruction.Instruction;
 import instruction.IntegerQueue;
 
@@ -23,7 +24,8 @@ public class InstructionFetcherTest {
 	public void testDecode() {
 		RegisterFile regFile = new RegisterFile();
 		IntegerQueue intQueue = new IntegerQueue(regFile);
-		InstructionFetcher instFetcher = new InstructionFetcher("testTrace");
+		FpQueue fpQueue = new FpQueue(regFile);
+		InstructionFetcher instFetcher = new InstructionFetcher("testTrace", intQueue, fpQueue);
 		ArrayList<Instruction> decodedInstructions = instFetcher.decode(4, 4, 4);
 		for (Instruction i : decodedInstructions) {
 			intQueue.addInstruction(i);
@@ -37,11 +39,12 @@ public class InstructionFetcherTest {
 	public void testCalc() {
 		RegisterFile regFile = new RegisterFile();
 		IntegerQueue intQueue = new IntegerQueue(regFile);
-		InstructionFetcher instFetcher = new InstructionFetcher("testTrace");
-		instFetcher.calc(intQueue);
+		FpQueue fpQueue = new FpQueue(regFile);
+		InstructionFetcher instFetcher = new InstructionFetcher("testTrace", intQueue, fpQueue);
+		instFetcher.calc();
 		instFetcher.edge();
 		intQueue.edge();
-		instFetcher.calc(intQueue);
+		instFetcher.calc();
 		instFetcher.edge();
 		intQueue.edge();
 		boolean ie = intQueue.isEmpty();
