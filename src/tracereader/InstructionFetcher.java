@@ -34,9 +34,16 @@ public class InstructionFetcher {
 		
 	}
 	
+	//TODO: Change this to actually check if the int queue is full and if the activelist is full
 	public void calc(IntegerQueue intQueue) {
-		if(!intQueue.isFull()) {
-			intQueue.addInstruction(this.instructionList.get(0));
+		for(int i = 0; i < instructionsToIssue_r.size(); i++) {
+			Instruction nextInstruction = instructionsToIssue_r.get(i);
+			if (intQueue.addInstruction(nextInstruction)) {
+				instructionsToIssue_n.remove(nextInstruction);
+			}
+		}
+		while(instructionsToIssue_n.size() < 4 && !instructionsRemaining_n.isEmpty()) {
+			instructionsToIssue_n.add(instructionsRemaining_n.remove(0));
 		}
 	}
 	

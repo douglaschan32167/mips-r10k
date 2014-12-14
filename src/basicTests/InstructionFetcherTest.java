@@ -39,8 +39,13 @@ public class InstructionFetcherTest {
 		IntegerQueue intQueue = new IntegerQueue(regFile);
 		InstructionFetcher instFetcher = new InstructionFetcher("testTrace");
 		instFetcher.calc(intQueue);
+		instFetcher.edge();
 		intQueue.edge();
-		assertFalse(intQueue.isEmpty());
+		instFetcher.calc(intQueue);
+		instFetcher.edge();
+		intQueue.edge();
+		boolean ie = intQueue.isEmpty();
+		assertFalse(ie);
 	}
 
 	@Test

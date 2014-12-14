@@ -3,36 +3,45 @@ package Register;
 import instruction.ActiveList;
 import instruction.Instruction;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 
 public class RegisterFile {
 	
-//	HashMap<Integer, Integer> registerMap = new HashMap<Integer, Integer>();
 	HashMap<Integer, PhysicalRegister> registerMap_r;
 	HashMap<Integer, PhysicalRegister> registerMap_n;
 	HashMap<Integer, PhysicalRegister> speculativeRegMap_r;
 	HashMap<Integer, PhysicalRegister> speculativeRegMap_n;
+	HashMap<Instruction, List<Integer>> physRegDependencies;
+	HashSet<Instruction> instructionsReadyForCommit_n;
+	HashSet<Instruction> instructionsReadyForCommit_r;
 	LinkedList<PhysicalRegister> freeList_r;
 	LinkedList<PhysicalRegister> freeList_n;
 	ActiveList activeList_r;
 	ActiveList activeList_n;
 	boolean[] busyTable_r;
 	boolean[] busyTable_n;
+	boolean hasStarted = false;
 	
 	public RegisterFile(){
 		this.freeList_r = new LinkedList<PhysicalRegister>();
 		this.registerMap_r = new HashMap<Integer, PhysicalRegister>();
 		this.freeList_n = new LinkedList<PhysicalRegister>();
 		this.registerMap_n = new HashMap<Integer, PhysicalRegister>();
-		this.busyTable_r = new boolean[64];
-		this.busyTable_n = new boolean[64];
-		for(int i = 0; i < 64; i++) {
+		this.busyTable_r = new boolean[65];
+		this.busyTable_n = new boolean[65];
+		for(int i = 0; i < 65; i++) {
 			freeList_r.add(new PhysicalRegister(i));
 			busyTable_r[i] = true; //WHAT SHOULD I INITIALIZE THIS AS?
+			busyTable_n[i] = true;
 		}
+		//Set r0 to be the 0 physical register, which should never change
+		registerMap_r.put(0, freeList_r.remove());
 		for (int i = 0; i < 31; i++) {
-			registerMap_r.put(i, freeList_r.remove());
+			registerMap_r.put(i+1, freeList_r.remove());
 		}
 		this.freeList_n = new LinkedList<PhysicalRegister>(this.freeList_r);
 		this.registerMap_n = new HashMap<Integer, PhysicalRegister>(this.registerMap_r);
@@ -40,13 +49,32 @@ public class RegisterFile {
 		this.speculativeRegMap_r = new HashMap<Integer, PhysicalRegister>(this.registerMap_r);
 		this.activeList_r = new ActiveList();
 		this.activeList_n = new ActiveList();
+		this.instructionsReadyForCommit_n = new HashSet<Instruction>();
+		this.instructionsReadyForCommit_r = new HashSet<Instruction>();
+		this.physRegDependencies = new HashMap<Instruction, List<Integer>>();
 
 		
 	}
 	
-	public boolean commitInstruction(Instruction inst) {
+	public void commitInstructions() {
+		for(int i = 0; i < 4; i++) {
+			Instruction nextInstruction = activeList_n.getFirstInstruction();
+			if(nextInstruction != null && this.instructionsReadyForCommit_r.contains(nextInstruction)) {
+				PhysicalRegister[] prs = this.activeList_n.commitInstruction(nextInstruction);
+				System.out.println("committed instruction");
+				freeList_n.add(prs[1]);
+				physRegDependencies.remove(nextInstruction);
+				registerMap_n.put(nextInstruction.getRd(), prs[0]);
+			}
+		}
 		//TODO: Implement!
-		return true;
+	}
+	
+	public void setReadyForCommit(Instruction inst) {
+		int physDestNum = activeList_r.getPhysicalDestinationNum(inst);
+		busyTable_n[physDestNum] = true;
+		instructionsReadyForCommit_n.add(inst);
+		System.out.println("Instruction ready for commit");
 	}
 	
 	public int getPhysicalRegNum(int logicalRegNum) {
@@ -55,33 +83,57 @@ public class RegisterFile {
 	
 	/** Check if all the registers are ready in this instruction */
 	public boolean checkRegisters(Instruction inst) {
-		if(freeList_n.isEmpty()) {
-			return false;
+		List<Integer> physDeps = physRegDependencies.get(inst);
+		for(Integer i : physDeps) {
+			if(!busyTable_r[i]) {
+				return false;
+			}
 		}
-		PhysicalRegister rtReg = speculativeRegMap_r.get(inst.getRt());
-		PhysicalRegister rsReg = speculativeRegMap_r.get(inst.getRs());
-		return (busyTable_r[rtReg.getNumber()] && busyTable_r[rsReg.getNumber()]);
+		return true;
+	}
+	
+	public boolean addToActiveList(Instruction inst) {
+		//this should remove a physical register from the freelist and then assign it to the instruction
+		this.hasStarted = true;
+		PhysicalRegister pr = freeList_n.remove();
+		PhysicalRegister oldPr = speculativeRegMap_n.get(inst.getRd());
+		ArrayList<Integer> physDeps = new ArrayList<Integer>();
+		physDeps.add(speculativeRegMap_n.get(inst.getRd()).getNumber());
+		physDeps.add(speculativeRegMap_n.get(inst.getRs()).getNumber());
+		physDeps.add(speculativeRegMap_n.get(inst.getRt()).getNumber());
+		this.physRegDependencies.put(inst, physDeps);
+		speculativeRegMap_n.put(inst.getRd(), pr);
+		busyTable_n[pr.getNumber()] = false;
+		return activeList_n.add(inst, pr, oldPr);
 	}
 	
 	public boolean hasFreePhysRegisters() {
 		return !this.freeList_n.isEmpty();
 	}
 	public void calc() {
+		commitInstructions();
 		//put stuff here
 	}
 	
 	public void edge() {
 		this.freeList_r = new LinkedList<PhysicalRegister>(this.freeList_n);
 		this.registerMap_r = new HashMap<Integer, PhysicalRegister>(this.registerMap_n);
-		for(int i = 0; i < 64; i++) {
-			busyTable_r[i] = busyTable_n[i];
+		for(int i = 0; i < 65; i++) {
+			busyTable_r[i] = busyTable_n[i]; 
 		}
+		this.activeList_r = new ActiveList(this.activeList_n);
+		this.instructionsReadyForCommit_r = new HashSet<Instruction>(this.instructionsReadyForCommit_n);
+		this.speculativeRegMap_r = new HashMap<Integer, PhysicalRegister>(this.speculativeRegMap_n);
 		
 	}
 	
 	//TODO: REMOVE ME ONLY FOR TESTING.
 	public boolean makePhysRegBusy(int physRegNum) {
 		return freeList_n.remove(new PhysicalRegister(physRegNum));
+	}
+	
+	public boolean isDone() {
+		return this.hasStarted && activeList_r.isEmpty();
 	}
 	
 	
