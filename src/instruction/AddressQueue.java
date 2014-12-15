@@ -81,13 +81,17 @@ public class AddressQueue {
 			this.regFile.setReadyForCommit(completedStore);
 		}
 		HashSet<Integer> previousAddresses = new HashSet<Integer>();
+		boolean prevLoadsAddrCalculated = true;
 		for(MemoryInstruction inst : memoryInstructions_r) {
 			if(!this.addressCalculatedInstrs_r.contains(inst)) {
 				this.addressCalculatedInstrs_n.add(inst);
+				if(inst.isLoadInstruction()) {
+					prevLoadsAddrCalculated = false;
+				}
 				continue;
 			}
 			List<Integer> physDeps = regFile.getPhysDeps(inst);
-			if(inst.isLoadInstruction() && loadAlu.canTakeDispatch()) {
+			if(inst.isLoadInstruction() && loadAlu.canTakeDispatch() && prevLoadsAddrCalculated) {
 				if(regFile.checkRegisters(inst) && !previousAddresses.contains(physDeps.get(0))) {
 					loadAlu.setNextInstruction((LoadInstruction)inst);
 					this.memoryInstructions_n.remove(inst);

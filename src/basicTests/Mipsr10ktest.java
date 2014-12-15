@@ -18,7 +18,7 @@ public class Mipsr10ktest {
 	public void maxCommitTest() {
 		Mipsr10k maxCommitTest = new Mipsr10k("maxcommittracecopy.txt");
 		int maxCommitCycles = maxCommitTest.execute();
-		assert(maxCommitCycles == 22); //Shouldn't it be 21?
+		assertEquals(maxCommitCycles, 21); //Shouldn't it be 21?
 	}
 	
 	@Test
@@ -31,6 +31,12 @@ public class Mipsr10ktest {
 	public void loadTest() {
 		Mipsr10k fpTest = new Mipsr10k("loadtesttrace");
 		assert(fpTest.execute() == 6);
+	}
+	
+	@Test
+	public void sergioTestLs2(){
+		Mipsr10k sergioLs2Test = new Mipsr10k("Sergio test ls2");
+		assert(sergioLs2Test.execute() == 12);
 	}
 
 }
