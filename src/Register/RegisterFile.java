@@ -46,7 +46,9 @@ public class RegisterFile {
 			busyTable_n[i] = true;
 		}
 		//Set r0 to be the 0 physical register, which should never change
-		registerMap_r.put(0, freeList_r.remove());
+		PhysicalRegister a = freeList_r.remove();
+		System.out.println("register logical 0 is mapped to " + String.valueOf(a.getNumber()));
+		registerMap_r.put(0, a);
 		for (int i = 0; i < 31; i++) {
 			registerMap_r.put(i+1, freeList_r.remove());
 		}
@@ -98,6 +100,7 @@ public class RegisterFile {
 		int physDestNum = activeList_r.getPhysicalDestinationNum(fpInst);
 		busyTable_n[physDestNum] = true;
 		packingFpInstructions_n.add(fpInst);
+		System.out.println("ready to pack" + fpInst.getString());
 	}
 	
 	public void packFps() {
@@ -121,6 +124,7 @@ public class RegisterFile {
 		List<Integer> physDeps = physRegDependencies.get(inst);
 		for(Integer i : physDeps) {
 			if(!busyTable_r[i]) {
+				System.out.println("register not ready" + String.valueOf(i));
 				return false;
 			}
 		}
@@ -144,7 +148,9 @@ public class RegisterFile {
 		physDeps.add(speculativeRegMap_n.get(inst.getRs()).getNumber());
 		physDeps.add(speculativeRegMap_n.get(inst.getRt()).getNumber());
 		this.physRegDependencies.put(inst, physDeps);
-		speculativeRegMap_n.put(inst.getRd(), pr);
+		if(inst.getRd() != 0) {
+			speculativeRegMap_n.put(inst.getRd(), pr);
+		}
 		busyTable_n[pr.getNumber()] = false;
 		return activeList_n.add(inst, pr, oldPr);
 	}
@@ -155,9 +161,10 @@ public class RegisterFile {
 		PhysicalRegister oldPr = speculativeRegMap_n.get(loadInst.getRt());
 		ArrayList<Integer> physDeps = new ArrayList<Integer>();
 		physDeps.add(speculativeRegMap_n.get(loadInst.getRt()).getNumber());//TODO: Is this necessary
-		physDeps.add(speculativeRegMap_n.get(loadInst.getRs()).getNumber());
+		physDeps.add(speculativeRegMap_n.get(loadInst.getRs()).getNumber()); //Somehow 0 is 32
 		this.physRegDependencies.put(loadInst, physDeps);
 		this.speculativeRegMap_n.put(loadInst.getRt(), pr);
+		System.out.println("setting bt " + String.valueOf(pr.getNumber()));
 		busyTable_n[pr.getNumber()] = false;
 		return activeList_n.add(loadInst, pr, oldPr);
 	}

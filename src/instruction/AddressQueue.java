@@ -82,6 +82,7 @@ public class AddressQueue {
 		}
 		HashSet<Integer> previousAddresses = new HashSet<Integer>();
 		boolean prevLoadsAddrCalculated = true;
+		boolean isFirstStore = true;
 		for(MemoryInstruction inst : memoryInstructions_r) {
 			if(!this.addressCalculatedInstrs_r.contains(inst)) {
 				this.addressCalculatedInstrs_n.add(inst);
@@ -98,15 +99,18 @@ public class AddressQueue {
 					this.addressCalculatedInstrs_n.remove(inst);
 				}
 				previousAddresses.add(physDeps.get(0));
-			} else if (inst.isStoreInstruction() && storeAlu.canTakeDispatch()) {
-				if(regFile.checkRegisters(inst)&&!previousAddresses.contains(physDeps.get(0))) {
-					storeAlu.setNextInstruction((StoreInstruction) inst);
-					this.memoryInstructions_n.remove(inst);
-					this.addressCalculatedInstrs_n.remove(inst);
+			} else if (inst.isStoreInstruction()) {
+				if(storeAlu.canTakeDispatch() && isFirstStore) {
+					if(regFile.checkRegisters(inst)&&!previousAddresses.contains(physDeps.get(0))) {
+						storeAlu.setNextInstruction((StoreInstruction) inst);
+						this.memoryInstructions_n.remove(inst);
+						this.addressCalculatedInstrs_n.remove(inst);
+					}
+					if(physDeps.get(0) != 0) {
+						previousAddresses.add(physDeps.get(0));
+					}
 				}
-				if(physDeps.get(0) != 0) {
-					previousAddresses.add(physDeps.get(0));
-				}
+				isFirstStore = false;
 			}
 		}
 	}

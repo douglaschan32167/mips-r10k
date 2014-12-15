@@ -18,6 +18,8 @@ public class InstructionFetcher {
 	ArrayList<Instruction> instructionsRemaining_n;
 	ArrayList<Instruction> instructionsToIssue_r;
 	ArrayList<Instruction> instructionsToIssue_n;
+	ArrayList<Instruction> instructionsFetched_r;
+	ArrayList<Instruction> instructionsFetched_n;
 	ArrayList<String> fpCodes;
 	ArrayList<String> loadCodes;
 	ArrayList<String> storeCodes;
@@ -28,6 +30,8 @@ public class InstructionFetcher {
 	
 	public InstructionFetcher(String tracePath, IntegerQueue intQueue, FpQueue fpQueue, AddressQueue addressQueue) {
 		this.traceReader = new TraceReader(tracePath);
+		this.instructionsFetched_n = new ArrayList<Instruction>();
+		this.instructionsFetched_r = new ArrayList<Instruction>();
 		this.instructionList = this.traceReader.readTrace();
 		this.instructionsRemaining_r = new ArrayList<Instruction>(instructionList);
 		this.instructionsRemaining_n = new ArrayList<Instruction>(instructionList);
@@ -73,24 +77,33 @@ public class InstructionFetcher {
 	
 	//TODO: Change this to actually check if the int queue is full and if the activelist is full
 	public void calc() {
+		int numDecoded = 0;
 		for(int i = 0; i < instructionsToIssue_r.size(); i++) {
+			if(numDecoded == 4) {
+				break;
+			}
 			Instruction nextInstruction = instructionsToIssue_r.get(i);
 			if(intCodes.contains(nextInstruction.getOp())) {
 				IntInstruction intInst = new IntInstruction(nextInstruction);
-				intQueue.addInstruction(intInst);
-				instructionsToIssue_n.remove(nextInstruction);
+				if(intQueue.addInstruction(intInst)){
+					instructionsToIssue_n.remove(nextInstruction);
+				}
 			} else if (fpCodes.contains(nextInstruction.getOp())){
 				FpInstruction fpInst = new FpInstruction(nextInstruction);
-				fpQueue.addInstruction(fpInst);
-				instructionsToIssue_n.remove(nextInstruction);
+				if(fpQueue.addInstruction(fpInst)) {
+					instructionsToIssue_n.remove(nextInstruction);
+				}
+				//TODO: Should I break?
 			} else if(loadCodes.contains(nextInstruction.getOp())) {
 				LoadInstruction loadInst = new LoadInstruction(nextInstruction);
-				addressQueue.addInstruction(loadInst);
-				instructionsToIssue_n.remove(nextInstruction);
+				if (addressQueue.addInstruction(loadInst)) {
+					instructionsToIssue_n.remove(nextInstruction);
+				}
 			} else if(storeCodes.contains(nextInstruction.getOp())) {
 				StoreInstruction storeInst = new StoreInstruction(nextInstruction);
-				addressQueue.addInstruction(storeInst);
-				instructionsToIssue_n.remove(nextInstruction);
+				if(addressQueue.addInstruction(storeInst)) {
+					instructionsToIssue_n.remove(nextInstruction);
+				}
 			} else {
 				System.err.println("Instruction not supported yet" + nextInstruction.getOp());
 				System.exit(1);

@@ -40,19 +40,19 @@ public class Mipsr10ktest {
 	public void sergioTestLs1(){
 		Mipsr10k sergioLs1Test = new Mipsr10k("Sergio test ls1");
 		int ls1Cycles = sergioLs1Test.execute();
-		assertEquals(ls1Cycles, 10);
+		assertEquals(ls1Cycles, 11);
 	}
 	
 	@Test
 	public void sergioTestLs2(){
 		Mipsr10k sergioLs2Test = new Mipsr10k("Sergio test ls2");
-		assert(sergioLs2Test.execute() == 12);
+		assert(sergioLs2Test.execute() == 13);
 	}
 
 	@Test
 	public void sergioTestLs3(){
 		Mipsr10k sergioLs3Test = new Mipsr10k("Sergio test ls3");
-		assert(sergioLs3Test.execute() == 15);
+		assert(sergioLs3Test.execute() == 16);
 	}
 
 }
