@@ -11,7 +11,8 @@ public class Mipsr10ktest {
 	@Test
 	public void test() {
 		Mipsr10k intTest = new Mipsr10k("RAWtrace");
-		assert(intTest.execute() == 7);
+		int intTestCycles = intTest.execute();
+		assertEquals(intTestCycles, 7);
 	}
 	
 	@Test
@@ -24,19 +25,34 @@ public class Mipsr10ktest {
 	@Test
 	public void fpTest() {
 		Mipsr10k fpTest = new Mipsr10k("fptesttrace");
-		assert(fpTest.execute() == 7);
+		int fpTestCycles = fpTest.execute();
+		assertEquals(fpTestCycles, 7);
 	}
 	
 	@Test
 	public void loadTest() {
-		Mipsr10k fpTest = new Mipsr10k("loadtesttrace");
-		assert(fpTest.execute() == 6);
+		Mipsr10k loadTest = new Mipsr10k("loadtesttrace");
+		int loadTestCycles = loadTest.execute();
+		assertEquals(loadTestCycles,6);
+	}
+	
+	@Test
+	public void sergioTestLs1(){
+		Mipsr10k sergioLs1Test = new Mipsr10k("Sergio test ls1");
+		int ls1Cycles = sergioLs1Test.execute();
+		assertEquals(ls1Cycles, 10);
 	}
 	
 	@Test
 	public void sergioTestLs2(){
 		Mipsr10k sergioLs2Test = new Mipsr10k("Sergio test ls2");
 		assert(sergioLs2Test.execute() == 12);
+	}
+
+	@Test
+	public void sergioTestLs3(){
+		Mipsr10k sergioLs3Test = new Mipsr10k("Sergio test ls3");
+		assert(sergioLs3Test.execute() == 15);
 	}
 
 }

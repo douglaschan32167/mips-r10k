@@ -89,6 +89,11 @@ public class RegisterFile {
 		System.out.println("Instruction ready for commit" + inst.getString());
 	}
 	
+	public void setStoreReadyForCommit(StoreInstruction storeInst){
+		instructionsReadyForCommit_n.add(storeInst);
+		System.out.println("Instruction ready for commit" + storeInst.getString());
+	}
+	
 	public void setReadyToPack(FpInstruction fpInst){
 		int physDestNum = activeList_r.getPhysicalDestinationNum(fpInst);
 		busyTable_n[physDestNum] = true;
@@ -112,7 +117,7 @@ public class RegisterFile {
 	}
 	
 	/** Check if all the registers are ready in this instruction */
-	public boolean checkRegisters(ArithmeticInstruction inst) {
+	public boolean checkRegisters(Instruction inst) {
 		List<Integer> physDeps = physRegDependencies.get(inst);
 		for(Integer i : physDeps) {
 			if(!busyTable_r[i]) {
@@ -123,11 +128,11 @@ public class RegisterFile {
 	}
 	
 	//IS THIS NEEDED?
-	public boolean checkRegisters(MemoryInstruction inst) {
-		System.err.println("check registers Not implemented yet for memory instructions");
-		System.exit(1);
-		return false;
-	}
+//	public boolean checkRegisters(MemoryInstruction inst) {
+//		System.err.println("check registers Not implemented yet for memory instructions");
+//		System.exit(1);
+//		return false;
+//	}
 	
 	public boolean addToActiveList(ArithmeticInstruction inst) {
 		//this should remove a physical register from the freelist and then assign it to the instruction

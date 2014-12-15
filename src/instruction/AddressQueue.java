@@ -78,7 +78,7 @@ public class AddressQueue {
 			this.regFile.setReadyForCommit(completedLoad);
 		}
 		if(completedStore != null) {
-			this.regFile.setReadyForCommit(completedStore);
+			this.regFile.setStoreReadyForCommit(completedStore);
 		}
 		HashSet<Integer> previousAddresses = new HashSet<Integer>();
 		boolean prevLoadsAddrCalculated = true;
@@ -104,7 +104,9 @@ public class AddressQueue {
 					this.memoryInstructions_n.remove(inst);
 					this.addressCalculatedInstrs_n.remove(inst);
 				}
-				previousAddresses.add(physDeps.get(0));
+				if(physDeps.get(0) != 0) {
+					previousAddresses.add(physDeps.get(0));
+				}
 			}
 		}
 	}

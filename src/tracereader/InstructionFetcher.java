@@ -7,6 +7,7 @@ import instruction.Instruction;
 import instruction.IntInstruction;
 import instruction.IntegerQueue;
 import instruction.LoadInstruction;
+import instruction.StoreInstruction;
 
 import java.util.ArrayList;
 
@@ -85,6 +86,10 @@ public class InstructionFetcher {
 			} else if(loadCodes.contains(nextInstruction.getOp())) {
 				LoadInstruction loadInst = new LoadInstruction(nextInstruction);
 				addressQueue.addInstruction(loadInst);
+				instructionsToIssue_n.remove(nextInstruction);
+			} else if(storeCodes.contains(nextInstruction.getOp())) {
+				StoreInstruction storeInst = new StoreInstruction(nextInstruction);
+				addressQueue.addInstruction(storeInst);
 				instructionsToIssue_n.remove(nextInstruction);
 			} else {
 				System.err.println("Instruction not supported yet" + nextInstruction.getOp());

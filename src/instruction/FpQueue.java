@@ -44,10 +44,10 @@ public class FpQueue {
 		FpInstruction completed1 = fpAdder.executeInstruction();
 		FpInstruction completed2 = fpMul.executeInstruction();
 		if(completed1 != null) {
-			regFile.setReadyForCommit(completed1);
+			regFile.setReadyToPack(completed1);
 		}
 		if(completed2 != null) {
-			regFile.setReadyForCommit(completed2);
+			regFile.setReadyToPack(completed2);
 		}
 		for(FpInstruction inst : instructions_r) {
 			if(inst.getType().equals("M") && fpMul.canTakeDispatch()) {
