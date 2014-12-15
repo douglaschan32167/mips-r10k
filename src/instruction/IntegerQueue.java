@@ -1,20 +1,21 @@
 package instruction;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 
 import Register.RegisterFile;
 
 public class IntegerQueue {
 	
-	HashSet<Instruction> instructions_r;
-	HashSet<Instruction> instructions_n;
+	LinkedList<IntInstruction> instructions_r;
+	LinkedList<IntInstruction> instructions_n;
 	IntegerALU intAlu1;
 	IntegerALU intAlu2;
 	RegisterFile regFile;
 	
 	public IntegerQueue(RegisterFile regFile) {
-		this.instructions_r = new HashSet<Instruction>();
-		this.instructions_n = new HashSet<Instruction>();
+		this.instructions_r = new LinkedList<IntInstruction>();
+		this.instructions_n = new LinkedList<IntInstruction>();
 		this.intAlu1 = new IntegerALU();
 		this.intAlu2 = new IntegerALU();
 		this.regFile = regFile;
@@ -28,7 +29,7 @@ public class IntegerQueue {
 		return instructions_r.isEmpty();
 	}
 	
-	public boolean addInstruction(Instruction inst) {
+	public boolean addInstruction(IntInstruction inst) {
 		if(this.isFull()) {
 			return false;
 		} else if (regFile.addToActiveList(inst)) {
@@ -49,7 +50,7 @@ public class IntegerQueue {
 			regFile.setReadyForCommit(completed2);
 		}
 		int numDispatched = 0;
-		for(Instruction inst : instructions_r) {
+		for(IntInstruction inst : instructions_r) {
 			if(regFile.checkRegisters(inst)) {
 				dispatchToAlu(inst);
 				numDispatched += 1;
@@ -62,7 +63,7 @@ public class IntegerQueue {
 	}
 	
 	public void edge() {
-		instructions_r = new HashSet<Instruction>(instructions_n);
+		instructions_r = new LinkedList<IntInstruction>(instructions_n);
 		intAlu1.edge();
 		intAlu2.edge();
 	}

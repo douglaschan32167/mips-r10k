@@ -1,6 +1,6 @@
 package instruction;
 
-public class StoreInstruction extends Instruction {
+public class StoreInstruction extends MemoryInstruction {
 
 	public StoreInstruction(String op, int rs, int rt, int rd,
 			String extraField, int lineNumber) {
@@ -10,6 +10,12 @@ public class StoreInstruction extends Instruction {
 	
 	public StoreInstruction(Instruction inst) {
 		super(inst.getOp(), inst.getRs(), inst.getRt(), inst.getRd(), inst.getExtraField(), inst.getLineNumber());
+		this.instString = inst.instString;
+	}
+	
+	@Override
+	public boolean isStoreInstruction() {
+		return true;
 	}
 
 }

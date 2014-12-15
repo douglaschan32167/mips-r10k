@@ -1,6 +1,6 @@
 package instruction;
 
-public class LoadInstruction extends Instruction {
+public class LoadInstruction extends MemoryInstruction {
 
 	public LoadInstruction(String op, int rs, int rt, int rd,
 			String extraField, int lineNumber) {
@@ -10,6 +10,12 @@ public class LoadInstruction extends Instruction {
 	
 	public LoadInstruction(Instruction inst) {
 		super(inst.getOp(), inst.getRs(), inst.getRt(), inst.getRd(), inst.getExtraField(), inst.getLineNumber());
+		this.instString = inst.instString;
+	}
+	
+	@Override
+	public boolean isLoadInstruction() {
+		return true;
 	}
 
 }

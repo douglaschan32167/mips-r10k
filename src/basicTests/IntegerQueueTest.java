@@ -2,6 +2,7 @@ package basicTests;
 
 import static org.junit.Assert.*;
 import instruction.Instruction;
+import instruction.IntInstruction;
 import instruction.IntegerQueue;
 
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class IntegerQueueTest {
 		IntegerQueue intQueue = new IntegerQueue(regFile);
 		assert(intQueue.isEmpty());
 		for(int i = 0; i < 16; i++) {
-			assert(intQueue.addInstruction(new Instruction("I", 1, 1, 1, null, i+1)));
+			assert(intQueue.addInstruction(new IntInstruction("I", 1, 1, 1, null, i+1)));
 		}
 		assert(intQueue.isFull());
 	}

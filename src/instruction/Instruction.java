@@ -8,6 +8,7 @@ public class Instruction {
 	int rd;
 	String extraField;
 	int lineNumber;
+	String instString;
 	
 	public Instruction(String op, int rs, int rt, int rd, String extraField, int lineNumber) {
 		this.op = op;
@@ -21,6 +22,15 @@ public class Instruction {
 	/** Return the type of the instruction (integer, store, load, branch, fpadd, fpmul) */
 	public String getType() {
 		return op;
+	}
+	
+	public void setInstString(String instString){
+		System.out.println(instString);
+		this.instString = instString;
+	}
+	
+	public String getString() {
+		return this.instString;
 	}
 	
 	public String getOp() {
@@ -45,6 +55,10 @@ public class Instruction {
 	
 	public int getLineNumber() {
 		return this.lineNumber;
+	}
+	
+	public boolean isStoreInstruction() {
+		return false;
 	}
 
 }

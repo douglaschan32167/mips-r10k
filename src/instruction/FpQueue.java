@@ -1,21 +1,21 @@
 package instruction;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 
 import Register.RegisterFile;
 
 public class FpQueue {
 
-	HashSet<FpInstruction> instructions_r;
-	HashSet<FpInstruction> instructions_n;
+	LinkedList<FpInstruction> instructions_r;
+	LinkedList<FpInstruction> instructions_n;
 	FpALU fpAdder;
 	FpALU fpMul;
 	RegisterFile regFile;
 	
 	public FpQueue(RegisterFile regFile) {
 		this.regFile = regFile;
-		this.instructions_r = new HashSet<FpInstruction>();
-		this.instructions_n = new HashSet<FpInstruction>();
+		this.instructions_r = new LinkedList<FpInstruction>();
+		this.instructions_n = new LinkedList<FpInstruction>();
 		this.fpAdder = new FpALU();
 		this.fpMul = new FpALU();
 	}
@@ -52,15 +52,17 @@ public class FpQueue {
 		for(FpInstruction inst : instructions_r) {
 			if(inst.getType().equals("M") && fpMul.canTakeDispatch()) {
 				fpMul.setNextInstruction(inst);
+				this.instructions_n.remove(inst);
 			}
 			if(inst.getType().equals("A") && fpAdder.canTakeDispatch()) {
 				fpAdder.setNextInstruction(inst);
+				this.instructions_n.remove(inst);
 			}
 		}
 	}
 	
 	public void edge() {
-		instructions_r = new HashSet<FpInstruction>(instructions_n);
+		instructions_r = new LinkedList<FpInstruction>(instructions_n);
 		fpAdder.edge();
 		fpMul.edge();
 	}

@@ -33,12 +33,23 @@ public class ActiveList {
 		return this.instructionList.add(inst);
 	}
 	
+	public boolean addStore(StoreInstruction storeInst) {
+		if(isFull()){
+			return false;
+		}
+		return this.instructionList.add(storeInst);
+	}
+	
 	public PhysicalRegister[] commitInstruction(Instruction inst) {
 		PhysicalRegister[] prs = new PhysicalRegister[2];
 		instructionList.remove(inst);
 		prs[0] = destRegisters.remove(inst);
 		prs[1] = oldPhysRegs.remove(inst);
 		return prs;
+	}
+	
+	public void commitStore(StoreInstruction storeInst) {
+		instructionList.remove(storeInst);
 	}
 	
 	public int getPhysicalDestinationNum(Instruction inst) {

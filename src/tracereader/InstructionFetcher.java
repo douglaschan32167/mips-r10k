@@ -1,10 +1,12 @@
 package tracereader;
 
+import instruction.AddressQueue;
 import instruction.FpInstruction;
 import instruction.FpQueue;
 import instruction.Instruction;
 import instruction.IntInstruction;
 import instruction.IntegerQueue;
+import instruction.LoadInstruction;
 
 import java.util.ArrayList;
 
@@ -21,8 +23,9 @@ public class InstructionFetcher {
 	ArrayList<String> intCodes;
 	IntegerQueue intQueue;
 	FpQueue fpQueue;
+	AddressQueue addressQueue;
 	
-	public InstructionFetcher(String tracePath, IntegerQueue intQueue, FpQueue fpQueue) {
+	public InstructionFetcher(String tracePath, IntegerQueue intQueue, FpQueue fpQueue, AddressQueue addressQueue) {
 		this.traceReader = new TraceReader(tracePath);
 		this.instructionList = this.traceReader.readTrace();
 		this.instructionsRemaining_r = new ArrayList<Instruction>(instructionList);
@@ -31,6 +34,7 @@ public class InstructionFetcher {
 		this.instructionsToIssue_r = new ArrayList<Instruction>();
 		this.intQueue = intQueue;
 		this.fpQueue = fpQueue;
+		this.addressQueue = addressQueue;
 		this.fpCodes = new ArrayList<String>();
 		this.fpCodes.add("M");
 		this.fpCodes.add("m");
@@ -77,6 +81,10 @@ public class InstructionFetcher {
 			} else if (fpCodes.contains(nextInstruction.getOp())){
 				FpInstruction fpInst = new FpInstruction(nextInstruction);
 				fpQueue.addInstruction(fpInst);
+				instructionsToIssue_n.remove(nextInstruction);
+			} else if(loadCodes.contains(nextInstruction.getOp())) {
+				LoadInstruction loadInst = new LoadInstruction(nextInstruction);
+				addressQueue.addInstruction(loadInst);
 				instructionsToIssue_n.remove(nextInstruction);
 			} else {
 				System.err.println("Instruction not supported yet" + nextInstruction.getOp());
