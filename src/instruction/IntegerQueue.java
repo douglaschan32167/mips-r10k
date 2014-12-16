@@ -7,16 +7,16 @@ import Register.RegisterFile;
 
 public class IntegerQueue {
 	
-	LinkedList<IntInstruction> instructions_r;
-	LinkedList<IntInstruction> instructions_n;
-	IntegerALU intAlu1;
+	LinkedList<Instruction> instructions_r;
+	LinkedList<Instruction> instructions_n;
+	IntegerBranchALU intBranchAlu1;
 	IntegerALU intAlu2;
 	RegisterFile regFile;
 	
 	public IntegerQueue(RegisterFile regFile) {
-		this.instructions_r = new LinkedList<IntInstruction>();
-		this.instructions_n = new LinkedList<IntInstruction>();
-		this.intAlu1 = new IntegerALU();
+		this.instructions_r = new LinkedList<Instruction>();
+		this.instructions_n = new LinkedList<Instruction>();
+		this.intBranchAlu1 = new IntegerBranchALU();
 		this.intAlu2 = new IntegerALU();
 		this.regFile = regFile;
 	}
@@ -29,42 +29,78 @@ public class IntegerQueue {
 		return instructions_r.isEmpty();
 	}
 	
-	public boolean addInstruction(IntInstruction inst) {
+	public boolean addInstruction(Instruction inst) {
 		if(this.isFull()) {
 			return false;
-		} else if (regFile.addToActiveList(inst)) {
+		}
+		if (inst.isBranchInstruction()){
+			if(regFile.addBranchToActiveList((BranchInstruction) inst)) {
+				instructions_n.add(inst);
+				return true;
+			}
+		} else if(regFile.addToActiveList((ArithmeticInstruction) inst)){
 			instructions_n.add(inst);
 			return true;
-		} else {
-			return false;
 		}
+		return false;
+//		} else if (regFile.addToActiveList(inst)) {
+//			instructions_n.add(inst);
+//			return true;
+//		} else {
+//			return false;
+//		}
 	}
 	
-	public void calc() {
-		Instruction completed1 = intAlu1.executeInstruction();
+	public void calc(int cycleNum) {
+		Instruction completed1 = intBranchAlu1.executeInstruction();
 		Instruction completed2 = intAlu2.executeInstruction();
+		if(this.regFile.mustPurgeMispredict()){
+			purgeMispredict(this.regFile.getMispredictedInstruction());
+			return;
+		}
+		boolean shouldDispatch = true;
 		if(completed1 != null) {
-			regFile.setReadyForCommit(completed1);
+			completed1.setExecuteCycleNum(cycleNum);
+			if(completed1.isBranchInstruction()) {
+				if (((BranchInstruction) completed1).isMispredicted()){
+					regFile.reportMispredictedBranch((BranchInstruction) completed1);
+					shouldDispatch = false;
+					regFile.setBranchReadyForCommit((BranchInstruction) completed1);
+				} else {
+					regFile.setBranchReadyForCommit((BranchInstruction) completed1);
+				}
+				//TODO: Rollback and stuff, canceling instructions
+			} else {
+				completed1.setExecuteCycleNum(cycleNum);
+				regFile.setReadyForCommit(completed1);
+			}
 		}
 		if(completed2 != null) {
+			completed2.setExecuteCycleNum(cycleNum);
 			regFile.setReadyForCommit(completed2);
 		}
+//		if(this.regFile.mustPurgeMispredict()){
+//			purgeMispredict(this.regFile.getMispredictedInstruction());
+//			return;
+//		}
 		int numDispatched = 0;
-		for(IntInstruction inst : instructions_r) {
+		for(Instruction inst : instructions_r) {
 			if(regFile.checkRegisters(inst)) {
-				dispatchToAlu(inst);
-				numDispatched += 1;
-				instructions_n.remove(inst);
-				if (numDispatched == 2) {
-					return;
+				if(dispatchToAlu(inst)){
+					inst.setIssueCycleNum(cycleNum);
+					numDispatched += 1;
+					instructions_n.remove(inst);
+					if (numDispatched == 2) {
+						return;
+					}
 				}
 			}
 		}
 	}
 	
 	public void edge() {
-		instructions_r = new LinkedList<IntInstruction>(instructions_n);
-		intAlu1.edge();
+		instructions_r = new LinkedList<Instruction>(instructions_n);
+		intBranchAlu1.edge();
 		intAlu2.edge();
 	}
 	
@@ -72,13 +108,24 @@ public class IntegerQueue {
 		instructions_n.remove(inst);
 	}
 	
-	private void dispatchToAlu(Instruction inst) {
-		if(!intAlu1.hasInstThisCycle()) {
-			intAlu1.setNextInstruction(inst);
+	private boolean dispatchToAlu(Instruction inst) {
+		if(!intBranchAlu1.hasInstThisCycle()) {
+			intBranchAlu1.setNextInstruction(inst);
 			System.out.println("dispatched to int alu 1");
-		} else if(!intAlu2.hasInstThisCycle()) {
+			return true;
+		} else if(!intAlu2.hasInstThisCycle() && !inst.isBranchInstruction()) {
 			intAlu2.setNextInstruction(inst);
 			System.out.println("dispatched to int alu 2");
+			return true;
+		}
+		return false;
+	}
+	
+	public void purgeMispredict(BranchInstruction branch) {
+		for (Instruction inst : this.instructions_r) {
+			if (inst.dependsOn(branch)) {
+				this.instructions_n.remove(inst);
+			}
 		}
 	}
 	

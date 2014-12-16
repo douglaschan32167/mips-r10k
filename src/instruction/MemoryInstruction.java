@@ -1,6 +1,8 @@
 package instruction;
 
 public class MemoryInstruction extends Instruction {
+	
+	int addrCalcCycleNum;
 
 	public MemoryInstruction(String op, int rs, int rt, int rd,
 			String extraField, int lineNumber) {
@@ -18,4 +20,11 @@ public class MemoryInstruction extends Instruction {
 		return false;
 	}
 
+	public void setAddrCalcCycleNum(int num) {
+		this.addrCalcCycleNum = num;
+	}
+	
+	public int getAddrCalcCycleNum() {
+		return this.addrCalcCycleNum;
+	}
 }

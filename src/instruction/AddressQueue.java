@@ -71,14 +71,20 @@ public class AddressQueue {
 		return this.memoryInstructions_n.size() >= MAX_ADDRESS_QUEUE_SIZE;
 	}
 	
-	public void calc(){
+	public void calc(int cycleNum){
 		LoadInstruction completedLoad = loadAlu.executeInstruction();
 		StoreInstruction completedStore = storeAlu.executeInstruction();
 		if(completedLoad != null) {
+			completedLoad.setExecuteCycleNum(cycleNum);
 			this.regFile.setReadyForCommit(completedLoad);
 		}
 		if(completedStore != null) {
+			completedStore.setExecuteCycleNum(cycleNum);
 			this.regFile.setStoreReadyForCommit(completedStore);
+		}
+		if(this.regFile.mustPurgeMispredict()) {
+			purgeMispredict(this.regFile.getMispredictedInstruction());
+			return;
 		}
 		HashSet<Integer> previousAddresses = new HashSet<Integer>();
 		boolean prevLoadsAddrCalculated = true;
@@ -96,6 +102,7 @@ public class AddressQueue {
 				if(regFile.checkRegisters(inst) && !previousAddresses.contains(physDeps.get(0))) {
 					loadAlu.setNextInstruction((LoadInstruction)inst);
 					this.memoryInstructions_n.remove(inst);
+					inst.setAddrCalcCycleNum(cycleNum);
 					this.addressCalculatedInstrs_n.remove(inst);
 				}
 				previousAddresses.add(physDeps.get(0));
@@ -104,6 +111,7 @@ public class AddressQueue {
 					if(regFile.checkRegisters(inst)&&!previousAddresses.contains(physDeps.get(0))) {
 						storeAlu.setNextInstruction((StoreInstruction) inst);
 						this.memoryInstructions_n.remove(inst);
+						inst.setAddrCalcCycleNum(cycleNum);
 						this.addressCalculatedInstrs_n.remove(inst);
 					}
 					if(physDeps.get(0) != 0) {
@@ -120,5 +128,16 @@ public class AddressQueue {
 		this.addressCalculatedInstrs_r = new HashSet<MemoryInstruction>(this.addressCalculatedInstrs_n);
 		loadAlu.edge();
 		storeAlu.edge();
+	}
+	
+	public void purgeMispredict(BranchInstruction branch) {
+		for(Instruction inst : this.memoryInstructions_n){
+			if(inst.dependsOn(branch)) {
+				this.memoryInstructions_n.remove(inst);
+				if(this.addressCalculatedInstrs_n.contains(inst)) {
+					this.addressCalculatedInstrs_n.remove(inst);
+				}
+			}
+		}
 	}
 }

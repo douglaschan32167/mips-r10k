@@ -35,7 +35,7 @@ public class RegisterFileTest {
 		
 		regFile.edge();
 		
-		regFile.commitInstructions();
+		regFile.commitInstructions(3);
 		assert(regFile.checkRegisters(i2) == false);
 		
 		regFile.edge();

@@ -20,7 +20,7 @@ public class Mipsr10k {
 		this.intQueue = new IntegerQueue(regFile);
 		this.fpQueue = new FpQueue(regFile);
 		this.tracePath = tracePath;
-		this.instFetcher = new InstructionFetcher(tracePath, intQueue, fpQueue, addressQueue);
+		this.instFetcher = new InstructionFetcher(tracePath, intQueue, fpQueue, addressQueue, regFile);
 
 
 	}
@@ -34,19 +34,20 @@ public class Mipsr10k {
 				
 			}
 			System.out.println("cycle " + String.valueOf(numCycles));
-			calc();
+			calc(numCycles);
 			edge();
 		}
+		System.out.println("Put the breakpoint here");
 		return numCycles;
 		
 	}
 	
-	private void calc() {
-		instFetcher.calc();
-		intQueue.calc();
-		this.fpQueue.calc();
-		this.addressQueue.calc();
-		regFile.calc();
+	private void calc(int cycleNum) {
+		instFetcher.calc(cycleNum);
+		this.intQueue.calc(cycleNum);
+		this.fpQueue.calc(cycleNum);
+		this.addressQueue.calc(cycleNum);
+		regFile.calc(cycleNum);
 	}
 	
 	private void edge() {

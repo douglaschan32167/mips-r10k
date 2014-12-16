@@ -1,6 +1,8 @@
 package tracereader;
 
 import instruction.AddressQueue;
+import instruction.BranchInstruction;
+import instruction.BranchMask;
 import instruction.FpInstruction;
 import instruction.FpQueue;
 import instruction.Instruction;
@@ -10,36 +12,40 @@ import instruction.LoadInstruction;
 import instruction.StoreInstruction;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+
+import Register.RegisterFile;
 
 public class InstructionFetcher {
 	TraceReader traceReader;
 	ArrayList<Instruction> instructionList;
-	ArrayList<Instruction> instructionsRemaining_r;
-	ArrayList<Instruction> instructionsRemaining_n;
+	LinkedList<Instruction> instructionsRemaining_r;
+	LinkedList<Instruction> instructionsRemaining_n;
 	ArrayList<Instruction> instructionsToIssue_r;
 	ArrayList<Instruction> instructionsToIssue_n;
-	ArrayList<Instruction> instructionsFetched_r;
-	ArrayList<Instruction> instructionsFetched_n;
 	ArrayList<String> fpCodes;
 	ArrayList<String> loadCodes;
 	ArrayList<String> storeCodes;
 	ArrayList<String> intCodes;
+	ArrayList<String> branchCodes;
+//	BranchMask branchMask;
 	IntegerQueue intQueue;
 	FpQueue fpQueue;
 	AddressQueue addressQueue;
+	RegisterFile regFile;
 	
-	public InstructionFetcher(String tracePath, IntegerQueue intQueue, FpQueue fpQueue, AddressQueue addressQueue) {
+	public InstructionFetcher(String tracePath, IntegerQueue intQueue, FpQueue fpQueue, AddressQueue addressQueue, RegisterFile regFile) {
+//		this.branchMask = new BranchMask();
 		this.traceReader = new TraceReader(tracePath);
-		this.instructionsFetched_n = new ArrayList<Instruction>();
-		this.instructionsFetched_r = new ArrayList<Instruction>();
 		this.instructionList = this.traceReader.readTrace();
-		this.instructionsRemaining_r = new ArrayList<Instruction>(instructionList);
-		this.instructionsRemaining_n = new ArrayList<Instruction>(instructionList);
+		this.instructionsRemaining_r = new LinkedList<Instruction>(instructionList);
+		this.instructionsRemaining_n = new LinkedList<Instruction>(instructionList);
 		this.instructionsToIssue_n = new ArrayList<Instruction>();
 		this.instructionsToIssue_r = new ArrayList<Instruction>();
 		this.intQueue = intQueue;
 		this.fpQueue = fpQueue;
 		this.addressQueue = addressQueue;
+		this.regFile = regFile;
 		this.fpCodes = new ArrayList<String>();
 		this.fpCodes.add("M");
 		this.fpCodes.add("m");
@@ -61,6 +67,10 @@ public class InstructionFetcher {
 		this.intCodes.add("i");
 		this.intCodes.add("add");
 		this.intCodes.add("sub");
+		this.branchCodes = new ArrayList<String>();
+		this.branchCodes.add("b");
+		this.branchCodes.add("B");
+		this.branchCodes.add("branch");
 	}
 	
 	public ArrayList<Instruction> decode(int intCapacity, int addrCapacity, int fpCapacity) {
@@ -76,33 +86,62 @@ public class InstructionFetcher {
 	}
 	
 	//TODO: Change this to actually check if the int queue is full and if the activelist is full
-	public void calc() {
+	public void calc(int cycleNum) {
 		int numDecoded = 0;
 		for(int i = 0; i < instructionsToIssue_r.size(); i++) {
+			if(this.regFile.mustPurgeMispredict()) {
+				purgeMispredict(this.regFile.getMispredictedInstruction());
+				break;
+			}
 			if(numDecoded == 4) {
 				break;
 			}
 			Instruction nextInstruction = instructionsToIssue_r.get(i);
 			if(intCodes.contains(nextInstruction.getOp())) {
 				IntInstruction intInst = new IntInstruction(nextInstruction);
+				intInst.setBranchDependencies(regFile.getBranchMask().getBranchDependencies());
+				intInst.setDecodeCycleNum(cycleNum);
 				if(intQueue.addInstruction(intInst)){
 					instructionsToIssue_n.remove(nextInstruction);
+					numDecoded += 1;
 				}
 			} else if (fpCodes.contains(nextInstruction.getOp())){
 				FpInstruction fpInst = new FpInstruction(nextInstruction);
+				fpInst.setBranchDependencies(regFile.getBranchMask().getBranchDependencies());
+				fpInst.setDecodeCycleNum(cycleNum);
 				if(fpQueue.addInstruction(fpInst)) {
 					instructionsToIssue_n.remove(nextInstruction);
+					numDecoded += 1;
 				}
 				//TODO: Should I break?
 			} else if(loadCodes.contains(nextInstruction.getOp())) {
 				LoadInstruction loadInst = new LoadInstruction(nextInstruction);
+				loadInst.setBranchDependencies(regFile.getBranchMask().getBranchDependencies());
+				loadInst.setDecodeCycleNum(cycleNum);
 				if (addressQueue.addInstruction(loadInst)) {
 					instructionsToIssue_n.remove(nextInstruction);
+					numDecoded +=1;
 				}
 			} else if(storeCodes.contains(nextInstruction.getOp())) {
 				StoreInstruction storeInst = new StoreInstruction(nextInstruction);
+				storeInst.setBranchDependencies(regFile.getBranchMask().getBranchDependencies());
+				storeInst.setDecodeCycleNum(cycleNum);
 				if(addressQueue.addInstruction(storeInst)) {
 					instructionsToIssue_n.remove(nextInstruction);
+					numDecoded += 1;
+				}
+			} else if(branchCodes.contains(nextInstruction.getOp())){
+				BranchInstruction branch = new BranchInstruction(nextInstruction);
+				branch.setBranchDependencies(regFile.getBranchMask().getBranchDependencies());
+				branch.setDecodeCycleNum(cycleNum);
+				if(regFile.getBranchMask().isFull()){
+					break;
+				}
+				regFile.getBranchMask().addBranch(branch);
+				regFile.setSnapshot(branch);
+				if(intQueue.addInstruction(branch)) {
+					instructionsToIssue_n.remove(nextInstruction);
+					numDecoded += 1;
 				}
 			} else {
 				System.err.println("Instruction not supported yet" + nextInstruction.getOp());
@@ -119,7 +158,20 @@ public class InstructionFetcher {
 	
 	public void edge() {
 		this.instructionsToIssue_r = new ArrayList<Instruction>(this.instructionsToIssue_n);
-		this.instructionsRemaining_r = new ArrayList<Instruction>(this.instructionsRemaining_n);
+		this.instructionsRemaining_r = new LinkedList<Instruction>(this.instructionsRemaining_n);
+	}
+	
+	public void purgeMispredict(BranchInstruction branch) {
+		this.instructionsRemaining_n = new LinkedList<Instruction>();
+		for(Instruction inst : instructionList) {
+			if(inst.getLineNumber() > branch.getLineNumber()) {
+				this.instructionsRemaining_n.addLast(inst);
+			}
+		}
+		branch.setIsMispredicted(false);
+		branch.setExtraField("0");
+		this.instructionsToIssue_n = new ArrayList<Instruction>();
+		this.instructionsRemaining_n.addFirst(branch);
 	}
 
 }

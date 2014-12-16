@@ -40,21 +40,29 @@ public class FpQueue {
 	}
 	
 	//TODO: Change this to be add and mul specific
-	public void calc() {
+	public void calc(int cycleNum) {
 		FpInstruction completed1 = fpAdder.executeInstruction();
 		FpInstruction completed2 = fpMul.executeInstruction();
 		if(completed1 != null) {
+			completed1.setExecuteCycleNum(cycleNum);
 			regFile.setReadyToPack(completed1);
 		}
 		if(completed2 != null) {
+			completed2.setExecuteCycleNum(cycleNum);
 			regFile.setReadyToPack(completed2);
+		}
+		if(regFile.mustPurgeMispredict()) {
+			purgeMispredict(this.regFile.getMispredictedInstruction());
+			return;
 		}
 		for(FpInstruction inst : instructions_r) {
 			if(inst.getType().equals("M") && fpMul.canTakeDispatch()) {
+				inst.setIssueCycleNum(cycleNum);
 				fpMul.setNextInstruction(inst);
 				this.instructions_n.remove(inst);
 			}
 			if(inst.getType().equals("A") && fpAdder.canTakeDispatch()) {
+				inst.setIssueCycleNum(cycleNum);
 				fpAdder.setNextInstruction(inst);
 				this.instructions_n.remove(inst);
 			}
@@ -65,6 +73,14 @@ public class FpQueue {
 		instructions_r = new LinkedList<FpInstruction>(instructions_n);
 		fpAdder.edge();
 		fpMul.edge();
+	}
+	
+	public void purgeMispredict(BranchInstruction branch) {
+		for(Instruction inst : this.instructions_n) {
+			if(inst.dependsOn(branch)){
+				this.instructions_n.remove(inst);
+			}
+		}
 	}
 	
 	private void releaseInstruction(Instruction inst) {

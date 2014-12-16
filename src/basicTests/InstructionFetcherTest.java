@@ -42,11 +42,11 @@ public class InstructionFetcherTest {
 		IntegerQueue intQueue = new IntegerQueue(regFile);
 		FpQueue fpQueue = new FpQueue(regFile);
 		AddressQueue addressQueue = new AddressQueue(regFile);
-		InstructionFetcher instFetcher = new InstructionFetcher("testTrace", intQueue, fpQueue, addressQueue);
-		instFetcher.calc();
+		InstructionFetcher instFetcher = new InstructionFetcher("testTrace", intQueue, fpQueue, addressQueue, regFile);
+		instFetcher.calc(1);
 		instFetcher.edge();
 		intQueue.edge();
-		instFetcher.calc();
+		instFetcher.calc(1);
 		instFetcher.edge();
 		intQueue.edge();
 		boolean ie = intQueue.isEmpty();
