@@ -26,6 +26,7 @@ public class ActiveList {
 		this.instructionList_r = new LinkedList<Instruction>(activeList.instructionList_r);
 		this.instructionList_n = new LinkedList<Instruction>(activeList.instructionList_n);
 		this.destRegisters = new HashMap<Instruction, PhysicalRegister>(activeList.getDestRegisters());
+		this.oldPhysRegs = new HashMap<Instruction, PhysicalRegister>(activeList.getOldPhysRegs());
 	}
 	
 	public boolean add(Instruction inst, PhysicalRegister pr, PhysicalRegister oldPr) {
@@ -72,7 +73,7 @@ public class ActiveList {
 	}
 	
 	public Instruction getFirstInstruction() {
-		return this.instructionList_r.peekFirst();
+		return this.instructionList_n.peekFirst();
 	}
 	
 	public boolean isFull() {
@@ -81,6 +82,10 @@ public class ActiveList {
 	
 	public boolean isEmpty() {
 		return instructionList_n.isEmpty();
+	}
+	
+	public HashMap<Instruction, PhysicalRegister> getOldPhysRegs(){
+		return this.oldPhysRegs;
 	}
 	
 	public LinkedList<Instruction> getInstList() {

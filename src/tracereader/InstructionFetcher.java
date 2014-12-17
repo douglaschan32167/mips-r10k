@@ -151,6 +151,9 @@ public class InstructionFetcher {
 //				instructionsToIssue_n.remove(nextInstruction);
 //			}
 		}
+		if (this.regFile.mustPurgeMispredict()) {
+			return;
+		}
 		while(instructionsToIssue_n.size() < 4 && !instructionsRemaining_n.isEmpty()) {
 			instructionsToIssue_n.add(instructionsRemaining_n.remove(0));
 		}

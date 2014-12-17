@@ -111,6 +111,9 @@ public class IntegerQueue {
 	private boolean dispatchToAlu(Instruction inst) {
 		if(!intBranchAlu1.hasInstThisCycle()) {
 			intBranchAlu1.setNextInstruction(inst);
+			if(inst.isBranchInstruction()) {
+				this.regFile.removeFromBranchMask((BranchInstruction) inst);
+			}
 			System.out.println("dispatched to int alu 1");
 			return true;
 		} else if(!intAlu2.hasInstThisCycle() && !inst.isBranchInstruction()) {

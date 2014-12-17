@@ -17,7 +17,7 @@ public class SergioTestT {
 	public void sergioTestT1() {
 		Mipsr10k t1 = new Mipsr10k("Sergio test t1");
 		int numCycles = t1.execute();
-		assertEquals(numCycles, 159);
+		assertEquals(numCycles, 202);
 	}
 	
 	@Test

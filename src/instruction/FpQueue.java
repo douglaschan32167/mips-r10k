@@ -56,12 +56,12 @@ public class FpQueue {
 			return;
 		}
 		for(FpInstruction inst : instructions_r) {
-			if(inst.getType().equals("M") && fpMul.canTakeDispatch()) {
+			if(inst.getType().equals("M") && fpMul.canTakeDispatch() && this.regFile.checkRegisters(inst)) {
 				inst.setIssueCycleNum(cycleNum);
 				fpMul.setNextInstruction(inst);
 				this.instructions_n.remove(inst);
 			}
-			if(inst.getType().equals("A") && fpAdder.canTakeDispatch()) {
+			if(inst.getType().equals("A") && fpAdder.canTakeDispatch() && this.regFile.checkRegisters(inst)) {
 				inst.setIssueCycleNum(cycleNum);
 				fpAdder.setNextInstruction(inst);
 				this.instructions_n.remove(inst);

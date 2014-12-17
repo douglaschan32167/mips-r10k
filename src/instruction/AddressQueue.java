@@ -74,6 +74,9 @@ public class AddressQueue {
 	public void calc(int cycleNum){
 		LoadInstruction completedLoad = loadAlu.executeInstruction();
 		StoreInstruction completedStore = storeAlu.executeInstruction();
+		if(cycleNum > 180) {
+			int a = 1;
+		}
 		if(completedLoad != null) {
 			completedLoad.setExecuteCycleNum(cycleNum);
 			this.regFile.setReadyForCommit(completedLoad);
