@@ -1,9 +1,11 @@
 package instruction;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import Register.PhysicalRegister;
 import Register.RegisterFile;
 
 public class AddressQueue {
@@ -14,8 +16,11 @@ public class AddressQueue {
 	LinkedList<MemoryInstruction> memoryInstructions_r;
 	HashSet<MemoryInstruction> addressCalculatedInstrs_n;
 	HashSet<MemoryInstruction> addressCalculatedInstrs_r;
-	LoadALU loadAlu;
-	StoreALU storeAlu;
+	HashMap<MemoryInstruction, Integer> committingInstructions_r;
+	HashMap<MemoryInstruction, Integer> committingInstructions_n;
+//	LoadALU loadAlu;
+//	StoreALU storeAlu;
+	MemoryALU memAlu;
 	RegisterFile regFile;
 	
 	public AddressQueue(RegisterFile regFile){
@@ -23,9 +28,13 @@ public class AddressQueue {
 		this.addressCalculatedInstrs_r = new HashSet<MemoryInstruction>();
 		this.memoryInstructions_n = new LinkedList<MemoryInstruction>();
 		this.memoryInstructions_r = new LinkedList<MemoryInstruction>();
-		this.loadAlu = new LoadALU();
-		this.storeAlu = new StoreALU();
+//		this.loadAlu = new LoadALU();
+//		this.storeAlu = new StoreALU();
+		this.memAlu = new MemoryALU();
 		this.regFile = regFile;
+		this.committingInstructions_n = new HashMap<MemoryInstruction, Integer>();
+		this.committingInstructions_r = new HashMap<MemoryInstruction, Integer>();
+		
 	}
 	
 	public boolean addInstruction(MemoryInstruction memInst) {
@@ -72,19 +81,19 @@ public class AddressQueue {
 	}
 	
 	public void calc(int cycleNum){
-		LoadInstruction completedLoad = loadAlu.executeInstruction();
-		StoreInstruction completedStore = storeAlu.executeInstruction();
-		if(cycleNum > 180) {
-			int a = 1;
-		}
-		if(completedLoad != null) {
-			completedLoad.setExecuteCycleNum(cycleNum);
-			this.regFile.setReadyForCommit(completedLoad);
-		}
-		if(completedStore != null) {
-			completedStore.setExecuteCycleNum(cycleNum);
-			this.regFile.setStoreReadyForCommit(completedStore);
-		}
+//		LoadInstruction completedLoad = loadAlu.executeInstruction();
+//		StoreInstruction completedStore = storeAlu.executeInstruction();
+//		if(cycleNum > 180) {
+//			int a = 1;
+//		}
+//		if(completedLoad != null) {
+//			completedLoad.setExecuteCycleNum(cycleNum);
+//			this.regFile.setReadyForCommit(completedLoad);
+//		}
+//		if(completedStore != null) {
+//			completedStore.setExecuteCycleNum(cycleNum);
+//			this.regFile.setStoreReadyForCommit(completedStore);
+//		}
 		if(this.regFile.mustPurgeMispredict()) {
 			purgeMispredict(this.regFile.getMispredictedInstruction());
 			return;
@@ -93,29 +102,37 @@ public class AddressQueue {
 		boolean prevLoadsAddrCalculated = true;
 		boolean isFirstStore = true;
 		for(MemoryInstruction inst : memoryInstructions_r) {
-			if(!this.addressCalculatedInstrs_r.contains(inst)) {
+			if(inst.isLoadInstruction() && !addressCalculatedInstrs_r.contains(inst)) {
+				prevLoadsAddrCalculated = false;
+			}
+			if(!this.addressCalculatedInstrs_r.contains(inst) && this.regFile.checkRegisters(inst)) {
 				this.addressCalculatedInstrs_n.add(inst);
-				if(inst.isLoadInstruction()) {
-					prevLoadsAddrCalculated = false;
+				inst.setAddrCalcCycleNum(cycleNum);
+				if(inst.isStoreInstruction()) {
+					isFirstStore = false;
 				}
 				continue;
 			}
 			List<Integer> physDeps = regFile.getPhysDeps(inst);
-			if(inst.isLoadInstruction() && loadAlu.canTakeDispatch() && prevLoadsAddrCalculated) {
-				if(regFile.checkRegisters(inst) && !previousAddresses.contains(physDeps.get(0))) {
-					loadAlu.setNextInstruction((LoadInstruction)inst);
+			if(inst.isLoadInstruction() && memAlu.canTakeDispatch() && prevLoadsAddrCalculated) {
+				if(regFile.checkRegisters(inst) && !previousAddresses.contains(physDeps.get(0)) && !this.committingInstructions_r.containsValue(physDeps.get(0))) {
+					memAlu.execute( inst);
 					this.memoryInstructions_n.remove(inst);
-					inst.setAddrCalcCycleNum(cycleNum);
+					inst.setExecuteCycleNum(cycleNum);
 					this.addressCalculatedInstrs_n.remove(inst);
+					this.committingInstructions_n.put(inst, physDeps.get(0));
+					this.regFile.setReadyForCommit(inst);
 				}
 				previousAddresses.add(physDeps.get(0));
 			} else if (inst.isStoreInstruction()) {
-				if(storeAlu.canTakeDispatch() && isFirstStore) {
-					if(regFile.checkRegisters(inst)&&!previousAddresses.contains(physDeps.get(0))) {
-						storeAlu.setNextInstruction((StoreInstruction) inst);
+				if(memAlu.canTakeDispatch() && isFirstStore) {
+					if(regFile.checkRegisters(inst)&&!previousAddresses.contains(physDeps.get(0)) && isFirstStore && prevLoadsAddrCalculated) {
+						memAlu.execute(inst);
 						this.memoryInstructions_n.remove(inst);
-						inst.setAddrCalcCycleNum(cycleNum);
+						inst.setExecuteCycleNum(cycleNum);
 						this.addressCalculatedInstrs_n.remove(inst);
+						this.committingInstructions_n.put(inst, physDeps.get(0));
+						this.regFile.setStoreReadyForCommit((StoreInstruction) inst);
 					}
 					if(physDeps.get(0) != 0) {
 						previousAddresses.add(physDeps.get(0));
@@ -129,8 +146,13 @@ public class AddressQueue {
 	public void edge() {
 		this.memoryInstructions_r = new LinkedList<MemoryInstruction>(this.memoryInstructions_n);
 		this.addressCalculatedInstrs_r = new HashSet<MemoryInstruction>(this.addressCalculatedInstrs_n);
-		loadAlu.edge();
-		storeAlu.edge();
+		memAlu.edge();
+		for(MemoryInstruction m : this.committingInstructions_r.keySet()) {
+			if(m.getCommitCycleNum() != 0) {
+				this.committingInstructions_n.remove(m);
+			}
+		}
+		this.committingInstructions_r = new HashMap<MemoryInstruction, Integer>(this.committingInstructions_n);
 	}
 	
 	public void purgeMispredict(BranchInstruction branch) {

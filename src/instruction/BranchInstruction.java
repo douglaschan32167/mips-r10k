@@ -15,6 +15,8 @@ public class BranchInstruction extends Instruction {
 		super(inst.getOp(), inst.getRs(), inst.getRt(), inst.getRd(), inst.getExtraField(), inst.getLineNumber());
 		this.instString = inst.instString;
 		this.isMispredicted = Integer.parseInt(extraField) == 1;
+		this.fetchCycleNum = inst.getFetchCycleNum();
+		this.decodeCycleNum = inst.getDecodeCycleNum();
 	}
 	
 	@Override

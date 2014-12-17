@@ -15,6 +15,10 @@ public class IntegerALU {
 		this.instThisCycle = true;
 	}
 	
+	public Instruction execute(Instruction inst) {
+		this.instThisCycle = true;
+		return inst;
+	}
 	public Instruction executeInstruction() {
 		return inst_r;
 	}

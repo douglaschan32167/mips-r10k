@@ -12,14 +12,14 @@ public class Mipsr10ktest {
 	public void test() {
 		Mipsr10k intTest = new Mipsr10k("RAWtrace");
 		int intTestCycles = intTest.execute();
-		assertEquals(intTestCycles, 7);
+		assertEquals(intTestCycles, 6);
 	}
 	
 	@Test
 	public void maxCommitTest() {
 		Mipsr10k maxCommitTest = new Mipsr10k("maxcommittracecopy.txt");
 		int maxCommitCycles = maxCommitTest.execute();
-		assertEquals(maxCommitCycles, 21); //Shouldn't it be 21?
+		assertEquals(maxCommitCycles, 14); //Shouldn't it be 21?
 	}
 	
 	@Test
@@ -46,13 +46,22 @@ public class Mipsr10ktest {
 	@Test
 	public void sergioTestLs2(){
 		Mipsr10k sergioLs2Test = new Mipsr10k("Sergio test ls2");
-		assert(sergioLs2Test.execute() == 13);
+		int numCycles = sergioLs2Test.execute();
+		assertEquals(numCycles, 13);
 	}
 
 	@Test
 	public void sergioTestLs3(){
 		Mipsr10k sergioLs3Test = new Mipsr10k("Sergio test ls3");
-		assert(sergioLs3Test.execute() == 16);
+		int numCycles = sergioLs3Test.execute();
+		assertEquals(numCycles, 16);
+	}
+	
+	@Test
+	public void sergioTestLs4(){
+		Mipsr10k sergioLs4Test = new Mipsr10k("Sergio test ls4");
+		int numCycles = sergioLs4Test.execute();
+		assertEquals(numCycles, 15);
 	}
 
 }

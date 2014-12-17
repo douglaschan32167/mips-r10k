@@ -28,5 +28,19 @@ public class SergioTestS {
 		int s3Cycles = sergioS3Test.execute();
 		assertEquals(s3Cycles, 68);
 	}
+	
+	@Test
+	public void sergioTestS4(){
+		Mipsr10k sergioS4Test = new Mipsr10k("Sergio test s4");
+		int s4Cycles = sergioS4Test.execute();
+		assertEquals(s4Cycles, 126);
+	}
+	
+	@Test
+	public void sergioTestS5(){
+		Mipsr10k sergioS5Test = new Mipsr10k("Sergio test s5");
+		int s5Cycles = sergioS5Test.execute();
+		assertEquals(s5Cycles, 24);
+	}
 
 }

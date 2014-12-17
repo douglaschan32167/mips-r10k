@@ -9,6 +9,10 @@ public class StoreALU extends MemoryALU {
 		super();
 	}
 	
+	public StoreInstruction execute(StoreInstruction storeInst) {
+		this.dispatchedToThisCycle = true;
+		return storeInst;
+	}
 	public void setNextInstruction(StoreInstruction inst) {
 		this.inst_n = inst;
 		this.dispatchedToThisCycle = true;

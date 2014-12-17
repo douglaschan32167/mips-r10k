@@ -91,24 +91,48 @@ public class Instruction {
 		this.fetchCycleNum = num;
 	}
 	
+	public int getFetchCycleNum() {
+		return this.fetchCycleNum;
+	}
+	
 	public void setDecodeCycleNum(int num) {
 		this.decodeCycleNum = num;
+	}
+	
+	public int getDecodeCycleNum() {
+		return this.decodeCycleNum;
 	}
 	
 	public void setIssueCycleNum(int num) {
 		this.issueCycleNum = num;
 	}
 	
+	public int getIssueCycleNum() {
+		return this.issueCycleNum;
+	}
+	
 	public void setExecuteCycleNum(int num){
 		this.executeCycleNum = num;
+	}
+	
+	public int getExecuteCycleNum() {
+		return this.executeCycleNum;
 	}
 	
 	public void setCommitCycleNum(int num) {
 		this.commitCycleNum = num;
 	}
 	
+	public int getCommitCycleNum(){
+		return this.commitCycleNum;
+	}
+	
 	public void setExtraField(String s){
 		this.extraField = s;
+	}
+	
+	public boolean isFpInstruction() {
+		return false;
 	}
 
 }

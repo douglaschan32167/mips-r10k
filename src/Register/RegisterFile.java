@@ -143,10 +143,15 @@ public class RegisterFile {
 	}
 	
 	public void setReadyToPack(FpInstruction fpInst){
-		int physDestNum = activeList_r.getPhysicalDestinationNum(fpInst);
-		busyTable_n[physDestNum] = true;
+//		int physDestNum = activeList_r.getPhysicalDestinationNum(fpInst);
+//		busyTable_n[physDestNum] = true;
 		packingFpInstructions_n.add(fpInst);
 		System.out.println("ready to pack" + fpInst.getString());
+	}
+	
+	public void setFpIsExecuting(FpInstruction fpInst){
+		int physDestNum = activeList_r.getPhysicalDestinationNum(fpInst);
+		busyTable_n[physDestNum] = true;
 	}
 	
 	public void packFps(int cycleNum) {
@@ -339,5 +344,9 @@ public class RegisterFile {
 		return this.branchMask;
 	}
 	
+	
+	public LinkedList<Instruction> getCommittedInstructions() {
+		return this.committedInstructions;
+	}
 
 }

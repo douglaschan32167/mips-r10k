@@ -41,29 +41,43 @@ public class FpQueue {
 	
 	//TODO: Change this to be add and mul specific
 	public void calc(int cycleNum) {
-		FpInstruction completed1 = fpAdder.executeInstruction();
-		FpInstruction completed2 = fpMul.executeInstruction();
+		FpInstruction completed1 = fpAdder.execute2();
+		FpInstruction completed2 = fpMul.execute2();
 		if(completed1 != null) {
-			completed1.setExecuteCycleNum(cycleNum);
+//			completed1.setExecuteCycleNum(cycleNum);
+			regFile.setFpIsExecuting(completed1);
 			regFile.setReadyToPack(completed1);
-		}
+		} 
+//		else if (fpAdder.getCyclesToCompletion() == 2) {
+//			FpInstruction fpInst = fpAdder.getCurrInst();
+////			fpInst.setExecuteCycleNum(cycleNum);
+//			regFile.setFpIsExecuting(fpInst);
+//		}
 		if(completed2 != null) {
-			completed2.setExecuteCycleNum(cycleNum);
+//			completed2.setExecuteCycleNum(cycleNum);
+			regFile.setFpIsExecuting(completed2);
 			regFile.setReadyToPack(completed2);
-		}
+		} 
+//		else if(fpMul.getCyclesToCompletion() == 2) {
+//			FpInstruction fpInst = fpMul.getCurrInst();
+////			fpInst.setExecuteCycleNum(cycleNum);
+//			regFile.setFpIsExecuting(fpInst);
+//		}
 		if(regFile.mustPurgeMispredict()) {
 			purgeMispredict(this.regFile.getMispredictedInstruction());
 			return;
 		}
 		for(FpInstruction inst : instructions_r) {
 			if(inst.getType().equals("M") && fpMul.canTakeDispatch() && this.regFile.checkRegisters(inst)) {
-				inst.setIssueCycleNum(cycleNum);
-				fpMul.setNextInstruction(inst);
+				inst.setExecuteCycleNum(cycleNum);
+				fpMul.execute1(inst);
+//				this.regFile.setFpIsExecuting(inst);
 				this.instructions_n.remove(inst);
 			}
 			if(inst.getType().equals("A") && fpAdder.canTakeDispatch() && this.regFile.checkRegisters(inst)) {
-				inst.setIssueCycleNum(cycleNum);
-				fpAdder.setNextInstruction(inst);
+				inst.setExecuteCycleNum(cycleNum);
+				fpAdder.execute1(inst);
+//				this.regFile.setFpIsExecuting(inst);
 				this.instructions_n.remove(inst);
 			}
 		}

@@ -9,6 +9,11 @@ public class LoadALU extends MemoryALU {
 		super();
 	}
 	
+	public LoadInstruction execute(LoadInstruction inst) {
+		this.dispatchedToThisCycle = true;
+		return inst;
+	}
+	
 	public void setNextInstruction(LoadInstruction inst) {
 		this.inst_n = inst;
 		this.dispatchedToThisCycle = true;
@@ -16,6 +21,14 @@ public class LoadALU extends MemoryALU {
 	
 	public LoadInstruction executeInstruction() {
 		return this.inst_r;
+	}
+	
+	public LoadInstruction getCurrInst() {
+		return this.inst_r;
+	}
+	
+	public int getCyclesToCompletion() {
+		return this.cyclesToCompletion_r;
 	}
 	
 	public void edge() {

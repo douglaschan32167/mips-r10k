@@ -1,8 +1,13 @@
 package tracereader;
 
+import java.util.LinkedList;
+
 import instruction.AddressQueue;
+import instruction.FpInstruction;
 import instruction.FpQueue;
+import instruction.Instruction;
 import instruction.IntegerQueue;
+import instruction.MemoryInstruction;
 import Register.RegisterFile;
 
 public class Mipsr10k {
@@ -38,6 +43,7 @@ public class Mipsr10k {
 			edge();
 		}
 		System.out.println("Put the breakpoint here");
+		printCommittedInstructions(numCycles);
 		return numCycles;
 		
 	}
@@ -56,6 +62,44 @@ public class Mipsr10k {
 		this.fpQueue.edge();
 		this.addressQueue.edge();
 		regFile.edge();
+	}
+	
+	public void printCommittedInstructions(int numCycles) {
+		LinkedList<Instruction> committedInstructions = this.regFile.getCommittedInstructions();
+		String instructions = "Instructions";
+		String nextLine = "";
+		System.out.printf("%-22s", instructions);
+		for(int i = 0; i < numCycles; i++) {
+			System.out.printf("%6.3s", String.valueOf(i+1) + "|");
+		}
+		System.out.printf("%s", "\n");
+		for(Instruction inst : committedInstructions) {
+			String schedule = "";
+			for(int i = 0; i < numCycles; i++) {
+				if(inst.getFetchCycleNum() == i+1) {
+					schedule += "  F  |";
+				} else if(inst.getDecodeCycleNum() == i+1) {
+					schedule += "  D  |";
+				} else if((inst.isLoadInstruction()|| inst.isStoreInstruction()) && ((MemoryInstruction)inst).getAddrCalcCycleNum() == i+1) {
+					schedule += "  A  |";
+				} else if (inst.getIssueCycleNum() ==i+1) {
+					schedule += "  I  |";
+				} else if (inst.isFpInstruction() && ((FpInstruction) inst).getExecuteCycleNum() == i) {
+					schedule += "  E  |";
+				} else if (inst.getExecuteCycleNum() == i+1) {
+					schedule += "  E  |";
+				} else if (inst.isFpInstruction() && ((FpInstruction) inst).getPackingCycleNum() == i + 1) {
+					schedule += "  P  |";
+				}else if (inst.getCommitCycleNum() == i+1) {
+					schedule += "  C  |";
+				}	else {
+					schedule += "     |";
+				}
+			}
+			String is = "%-22s%s\n";
+			System.out.printf(is, String.valueOf(inst.getLineNumber())+ " " + inst.getString(), schedule);
+		}
+		
 	}
 
 }

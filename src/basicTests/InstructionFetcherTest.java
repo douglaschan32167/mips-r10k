@@ -36,22 +36,22 @@ public class InstructionFetcherTest {
 //		assertFalse(intQueue.isEmpty());
 //	}
 	
-	@Test
-	public void testCalc() {
-		RegisterFile regFile = new RegisterFile();
-		IntegerQueue intQueue = new IntegerQueue(regFile);
-		FpQueue fpQueue = new FpQueue(regFile);
-		AddressQueue addressQueue = new AddressQueue(regFile);
-		InstructionFetcher instFetcher = new InstructionFetcher("testTrace", intQueue, fpQueue, addressQueue, regFile);
-		instFetcher.calc(1);
-		instFetcher.edge();
-		intQueue.edge();
-		instFetcher.calc(1);
-		instFetcher.edge();
-		intQueue.edge();
-		boolean ie = intQueue.isEmpty();
-		assertFalse(ie);
-	}
+//	@Test
+//	public void testCalc() {
+//		RegisterFile regFile = new RegisterFile();
+//		IntegerQueue intQueue = new IntegerQueue(regFile);
+//		FpQueue fpQueue = new FpQueue(regFile);
+//		AddressQueue addressQueue = new AddressQueue(regFile);
+//		InstructionFetcher instFetcher = new InstructionFetcher("testTrace", intQueue, fpQueue, addressQueue, regFile);
+//		instFetcher.calc(1);
+//		instFetcher.edge();
+//		intQueue.edge();
+//		instFetcher.calc(1);
+//		instFetcher.edge();
+//		intQueue.edge();
+//		boolean ie = intQueue.isEmpty();
+//		assertFalse(ie);
+//	}
 
 	@Test
 	public void testEdge() {

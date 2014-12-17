@@ -11,6 +11,8 @@ public class LoadInstruction extends MemoryInstruction {
 	public LoadInstruction(Instruction inst) {
 		super(inst.getOp(), inst.getRs(), inst.getRt(), inst.getRd(), inst.getExtraField(), inst.getLineNumber());
 		this.instString = inst.instString;
+		this.fetchCycleNum = inst.getFetchCycleNum();
+		this.decodeCycleNum = inst.getDecodeCycleNum();
 	}
 	
 	@Override
