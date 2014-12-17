@@ -89,7 +89,11 @@ public class IntegerQueue {
 				if(dispatchToAlu(inst)){
 					inst.setExecuteCycleNum(cycleNum);
 					numDispatched += 1;
-					regFile.setReadyForCommit(inst);
+					if(inst.isBranchInstruction()) {
+						this.regFile.setBranchReadyForCommit((BranchInstruction) inst);
+					} else {
+						regFile.setReadyForCommit(inst);
+					}
 					instructions_n.remove(inst);
 					if (numDispatched == 2) {
 						return;

@@ -16,8 +16,8 @@ public class AddressQueue {
 	LinkedList<MemoryInstruction> memoryInstructions_r;
 	HashSet<MemoryInstruction> addressCalculatedInstrs_n;
 	HashSet<MemoryInstruction> addressCalculatedInstrs_r;
-	HashMap<MemoryInstruction, Integer> committingInstructions_r;
-	HashMap<MemoryInstruction, Integer> committingInstructions_n;
+	HashMap<MemoryInstruction, String> committingInstructions_r;
+	HashMap<MemoryInstruction, String> committingInstructions_n;
 //	LoadALU loadAlu;
 //	StoreALU storeAlu;
 	MemoryALU memAlu;
@@ -32,8 +32,8 @@ public class AddressQueue {
 //		this.storeAlu = new StoreALU();
 		this.memAlu = new MemoryALU();
 		this.regFile = regFile;
-		this.committingInstructions_n = new HashMap<MemoryInstruction, Integer>();
-		this.committingInstructions_r = new HashMap<MemoryInstruction, Integer>();
+		this.committingInstructions_n = new HashMap<MemoryInstruction, String>();
+		this.committingInstructions_r = new HashMap<MemoryInstruction, String>();
 		
 	}
 	
@@ -98,7 +98,7 @@ public class AddressQueue {
 			purgeMispredict(this.regFile.getMispredictedInstruction());
 			return;
 		}
-		HashSet<Integer> previousAddresses = new HashSet<Integer>();
+		HashSet<String> previousAddresses = new HashSet<String>();
 		boolean prevLoadsAddrCalculated = true;
 		boolean isFirstStore = true;
 		for(MemoryInstruction inst : memoryInstructions_r) {
@@ -115,15 +115,15 @@ public class AddressQueue {
 			}
 			List<Integer> physDeps = regFile.getPhysDeps(inst);
 			if(inst.isLoadInstruction() && memAlu.canTakeDispatch() && prevLoadsAddrCalculated) {
-				if(regFile.checkRegisters(inst) && !previousAddresses.contains(physDeps.get(0)) && !this.committingInstructions_r.containsValue(physDeps.get(0))) {
+				if(regFile.checkRegisters(inst) && !previousAddresses.contains(inst.getExtraField()) && !this.committingInstructions_r.containsValue(inst.getExtraField())) {
 					memAlu.execute( inst);
 					this.memoryInstructions_n.remove(inst);
 					inst.setExecuteCycleNum(cycleNum);
 					this.addressCalculatedInstrs_n.remove(inst);
-					this.committingInstructions_n.put(inst, physDeps.get(0));
+					this.committingInstructions_n.put(inst, inst.getExtraField());
 					this.regFile.setReadyForCommit(inst);
 				}
-				previousAddresses.add(physDeps.get(0));
+				previousAddresses.add(inst.getExtraField());
 			} else if (inst.isStoreInstruction()) {
 				if(memAlu.canTakeDispatch() && isFirstStore) {
 					if(regFile.checkRegisters(inst)&&!previousAddresses.contains(physDeps.get(0)) && isFirstStore && prevLoadsAddrCalculated) {
@@ -131,11 +131,11 @@ public class AddressQueue {
 						this.memoryInstructions_n.remove(inst);
 						inst.setExecuteCycleNum(cycleNum);
 						this.addressCalculatedInstrs_n.remove(inst);
-						this.committingInstructions_n.put(inst, physDeps.get(0));
+						this.committingInstructions_n.put(inst, inst.getExtraField());
 						this.regFile.setStoreReadyForCommit((StoreInstruction) inst);
 					}
 					if(physDeps.get(0) != 0) {
-						previousAddresses.add(physDeps.get(0));
+						previousAddresses.add(inst.getExtraField());
 					}
 				}
 				isFirstStore = false;
@@ -152,7 +152,7 @@ public class AddressQueue {
 				this.committingInstructions_n.remove(m);
 			}
 		}
-		this.committingInstructions_r = new HashMap<MemoryInstruction, Integer>(this.committingInstructions_n);
+		this.committingInstructions_r = new HashMap<MemoryInstruction, String>(this.committingInstructions_n);
 	}
 	
 	public void purgeMispredict(BranchInstruction branch) {
