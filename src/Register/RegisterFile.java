@@ -42,6 +42,8 @@ public class RegisterFile {
 	HashMap<BranchInstruction, boolean[]> busyTableScreenshots;
 	HashSet<BranchInstruction> committedBranches;
 	LinkedList<Instruction> committedInstructions;
+	LinkedList<Instruction> cancelledInstructions_n;
+	LinkedList<Instruction> cancelledInstructions_r;
 	BranchMask branchMask;
 	
 	public RegisterFile(){
@@ -81,7 +83,8 @@ public class RegisterFile {
 		this.committedBranches = new HashSet<BranchInstruction>();
 		this.branchMask = new BranchMask();
 		this.committedInstructions = new LinkedList<Instruction>();
-		
+		this.cancelledInstructions_n = new LinkedList<Instruction>();
+		this.cancelledInstructions_r = new LinkedList<Instruction>();
 	}
 	
 	public void commitInstructions(int cycleNum) {
@@ -97,9 +100,11 @@ public class RegisterFile {
 					this.activeList_n.commitBranch((BranchInstruction) nextInstruction);
 				} else if(nextInstruction.isStoreInstruction()) {
 					this.physRegDependencies.remove(nextInstruction);//do I need this?
+					this.instructionsReadyForCommit_n.remove(nextInstruction);
 					this.activeList_n.commitStore((StoreInstruction) nextInstruction);
 				} else if(nextInstruction.isLoadInstruction()) {
 					PhysicalRegister[] prs = this.activeList_n.commitInstruction(nextInstruction);
+					this.instructionsReadyForCommit_n.remove(nextInstruction);
 					System.out.println("committed load");
 					freeList_n.add(prs[1]);
 					physRegDependencies.remove(nextInstruction);
@@ -114,6 +119,7 @@ public class RegisterFile {
 				this.committedInstructions.add(nextInstruction);
 			}
 		}
+		this.committedInstructions.addAll(this.cancelledInstructions_r);
 		//TODO: Implement!
 	}
 	
@@ -267,7 +273,7 @@ public class RegisterFile {
 		}
 		if(mustPurgeMispredict()) {
 			System.out.println("must purge mispredict RegFile");
-			purgeMispredict(getMispredictedInstruction());
+			purgeMispredict(getMispredictedInstruction(), cycleNum);
 			return;
 		}
 		commitInstructions(cycleNum);
@@ -290,6 +296,9 @@ public class RegisterFile {
 		this.instructionToPurge_r = this.instructionToPurge_n;
 		this.instructionToPurge_n = null;
 		this.activeList_n.edge();
+		this.branchMask.edge();
+		this.cancelledInstructions_r = new LinkedList<Instruction>(this.cancelledInstructions_n);
+		this.cancelledInstructions_n = new LinkedList<Instruction>();
 		
 	}
 	
@@ -323,7 +332,7 @@ public class RegisterFile {
 		this.busyTableScreenshots.put(branch, btCopy);
 	}
 	
-	public void purgeMispredict(BranchInstruction branch) {
+	public void purgeMispredict(BranchInstruction branch, int cycleNum) {
 		HashMap<Instruction, PhysicalRegister> oldDestCopy = new HashMap<Instruction, PhysicalRegister>(this.activeList_n.getOldPhysRegs());
 		HashMap<Instruction, PhysicalRegister> physDestCopy = new HashMap<Instruction, PhysicalRegister>(this.activeList_n.getDestRegisters());
 		LinkedList<Instruction> purgedInstructions = this.activeList_n.purgeMispredict(branch);
@@ -332,6 +341,8 @@ public class RegisterFile {
 		this.packingFpInstructions_n.removeAll(purgedInstructions);
 		while(!purgedInstructions.isEmpty()) {
 			Instruction inst = purgedInstructions.removeLast();
+			inst.setCancelledCycleNum(cycleNum);
+			addToCancelledInstructions(inst);
 			this.busyTableScreenshots.remove(inst);
 			this.regMapScreenshots.remove(inst);
 			if(!inst.isStoreInstruction() && !inst.isBranchInstruction()) {
@@ -362,6 +373,10 @@ public class RegisterFile {
 	
 	public LinkedList<Instruction> getCommittedInstructions() {
 		return this.committedInstructions;
+	}
+	
+	public void addToCancelledInstructions(Instruction inst) {
+		this.cancelledInstructions_n.addFirst(inst);
 	}
 
 }

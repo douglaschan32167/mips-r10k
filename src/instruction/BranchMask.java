@@ -21,6 +21,9 @@ public class BranchMask {
 	}
 	
 	public boolean addBranch(BranchInstruction branch) {
+		if(branch.getLineNumber() == 40) {
+			int a = 1;
+		}
 		if(isFull()) {
 			return false;
 		}

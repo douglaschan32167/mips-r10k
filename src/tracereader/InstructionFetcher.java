@@ -143,10 +143,10 @@ public class InstructionFetcher {
 				if(regFile.getBranchMask().isFull()){
 					break;
 				}
-				regFile.getBranchMask().addBranch(branch);
-				regFile.setSnapshot(branch);
 				if(intQueue.addInstruction(branch)) {
 					instructionsToIssue_n.remove(nextInstruction);
+					regFile.getBranchMask().addBranch(branch);
+					regFile.setSnapshot(branch);
 					numDecoded += 1;
 				}
 			} else {
@@ -190,7 +190,8 @@ public class InstructionFetcher {
 		branch.setIsMispredicted(false);
 		branch.setExtraField("0");
 		this.instructionsToIssue_n = new ArrayList<Instruction>();
-		this.instructionsRemaining_n.addFirst(branch);
+		this.instructionsRemaining_n.addFirst(new BranchInstruction(branch));
+		this.fetchedInstructions_n = new ArrayList<Instruction>();
 	}
 	
 	public boolean isDone() {

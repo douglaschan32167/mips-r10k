@@ -99,7 +99,9 @@ public class Mipsr10k {
 					schedule += "  P  |";
 				}else if (inst.getCommitCycleNum() == i+1) {
 					schedule += "  C  |";
-				}	else {
+				} else if (inst.getCancelledCycleNum() == i+1) {
+					schedule += "  X  |";
+				} else {
 					schedule += "     |";
 				}
 			}

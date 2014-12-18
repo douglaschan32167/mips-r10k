@@ -18,6 +18,7 @@ public class Instruction {
 	int executeCycleNum;
 	int issueCycleNum;
 	int commitCycleNum;
+	int cancelledCycleNum;
 	
 	public Instruction(String op, int rs, int rt, int rd, String extraField, int lineNumber) {
 		this.op = op;
@@ -125,6 +126,14 @@ public class Instruction {
 	
 	public int getCommitCycleNum(){
 		return this.commitCycleNum;
+	}
+	
+	public void setCancelledCycleNum(int num) {
+		this.cancelledCycleNum = num;
+	}
+	
+	public int getCancelledCycleNum() {
+		return this.cancelledCycleNum;
 	}
 	
 	public void setExtraField(String s){

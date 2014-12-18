@@ -8,13 +8,15 @@ public class FpALU {
 	int cyclesToCompletion_r;
 	boolean hasGottenDispatch;
 	FpInstruction currInst;
-	boolean hasExecuted;
+	boolean hasExecuted1;
+	boolean hasExecuted2;
 	
 	public FpALU(){
 		this.cyclesToCompletion_r = 0;
 		this.cyclesToCompletion_n = 0;
 		this.hasGottenDispatch = false;
-		this.hasExecuted = false;
+		this.hasExecuted1 = false;
+		this.hasExecuted2 = false;
 	}
 	
 	public FpInstruction executeInstruction(){
@@ -30,18 +32,22 @@ public class FpALU {
 	
 	public void execute1(FpInstruction fpInst) {
 		this.currInst = fpInst;
-		this.hasExecuted = true;
+		this.hasExecuted1 = true;
 	}
 	
 	public boolean canTakeDispatch() {
-		return !this.hasExecuted;
+		return !this.hasExecuted1;
 //		return cyclesToCompletion_r <= 1 && !this.hasGottenDispatch;
+	}
+	
+	public boolean canExecute2() {
+		return !this.hasExecuted2;
 	}
 	
 	public FpInstruction execute2() {
 		FpInstruction tempInst = this.currInst;
 		if(this.currInst != null) {
-			this.hasExecuted = true;
+			this.hasExecuted2 = true;
 			this.currInst = null;
 		}
 		return tempInst;
@@ -66,7 +72,8 @@ public class FpALU {
 		this.hasGottenDispatch = false;
 //		this.inst_n = null;
 		this.cyclesToCompletion_r = this.cyclesToCompletion_n;
-		this.hasExecuted = false;
+		this.hasExecuted1 = false;
+		this.hasExecuted2 = false;
 	}
 	
 	public void purgeMispredict() {

@@ -17,6 +17,8 @@ public class BranchInstruction extends Instruction {
 		this.isMispredicted = Integer.parseInt(extraField) == 1;
 		this.fetchCycleNum = inst.getFetchCycleNum();
 		this.decodeCycleNum = inst.getDecodeCycleNum();
+		this.executeCycleNum = inst.getExecuteCycleNum();
+		this.issueCycleNum = inst.getIssueCycleNum();
 	}
 	
 	@Override
