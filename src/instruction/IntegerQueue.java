@@ -79,10 +79,10 @@ public class IntegerQueue {
 //			completed2.setExecuteCycleNum(cycleNum);
 //			regFile.setReadyForCommit(completed2);
 //		}
-//		if(this.regFile.mustPurgeMispredict()){
-//			purgeMispredict(this.regFile.getMispredictedInstruction());
-//			return;
-//		}
+		if(this.regFile.mustPurgeMispredict()){
+			purgeMispredict(this.regFile.getMispredictedInstruction());
+			return;
+		}
 		int numDispatched = 0;
 		for(Instruction inst : instructions_r) {
 			if(regFile.checkRegisters(inst)) {
@@ -90,6 +90,9 @@ public class IntegerQueue {
 					inst.setExecuteCycleNum(cycleNum);
 					numDispatched += 1;
 					if(inst.isBranchInstruction()) {
+						if(((BranchInstruction) inst).isMispredicted()) {
+							this.regFile.reportMispredictedBranch((BranchInstruction) inst);
+						}
 						this.regFile.setBranchReadyForCommit((BranchInstruction) inst);
 					} else {
 						regFile.setReadyForCommit(inst);

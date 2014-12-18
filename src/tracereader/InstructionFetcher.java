@@ -92,11 +92,13 @@ public class InstructionFetcher {
 	//TODO: Change this to actually check if the int queue is full and if the activelist is full
 	public void calc(int cycleNum) {
 		int numDecoded = 0;
+		if(this.regFile.mustPurgeMispredict()) {
+			System.out.println("must purge mispredict instfetch");
+			purgeMispredict(this.regFile.getMispredictedInstruction());
+			return;
+		}
 		for(int i = 0; i < instructionsToIssue_r.size(); i++) {
-			if(this.regFile.mustPurgeMispredict()) {
-				purgeMispredict(this.regFile.getMispredictedInstruction());
-				break;
-			}
+
 			if(numDecoded == 4) {
 				break;
 			}

@@ -266,7 +266,7 @@ public class RegisterFile {
 			System.out.println("breakpoint");
 		}
 		if(mustPurgeMispredict()) {
-			System.out.println("must purge mispredict");
+			System.out.println("must purge mispredict RegFile");
 			purgeMispredict(getMispredictedInstruction());
 			return;
 		}
@@ -324,20 +324,35 @@ public class RegisterFile {
 	}
 	
 	public void purgeMispredict(BranchInstruction branch) {
-		List<Instruction> purgedInstructions = this.activeList_n.purgeMispredict(branch);
+		HashMap<Instruction, PhysicalRegister> oldDestCopy = new HashMap<Instruction, PhysicalRegister>(this.activeList_n.getOldPhysRegs());
+		HashMap<Instruction, PhysicalRegister> physDestCopy = new HashMap<Instruction, PhysicalRegister>(this.activeList_n.getDestRegisters());
+		LinkedList<Instruction> purgedInstructions = this.activeList_n.purgeMispredict(branch);
 		this.branchMask.purgeMispredict(branch);
 		this.instructionsReadyForCommit_n.removeAll(purgedInstructions);
 		this.packingFpInstructions_n.removeAll(purgedInstructions);
-		for(Instruction inst: purgedInstructions) {
+		while(!purgedInstructions.isEmpty()) {
+			Instruction inst = purgedInstructions.removeLast();
 			this.busyTableScreenshots.remove(inst);
 			this.regMapScreenshots.remove(inst);
+			if(!inst.isStoreInstruction() || !inst.isBranchInstruction()) {
+				PhysicalRegister oldReg = oldDestCopy.get(inst);
+				if(inst.isLoadInstruction()) {
+					this.speculativeRegMap_n.put(inst.getRt(), oldReg);
+				} else {
+					this.speculativeRegMap_n.put(inst.getRd(), oldReg);
+				}
+			}
+		}
+		for(PhysicalRegister pr : this.activeList_n.getPurgedRegisters()) {
+			busyTable_n[pr.getNumber()] = true;
+			freeList_n.add(pr);
 		}
 		boolean[] busyTableSnapshot = this.busyTableScreenshots.get(branch);
-		this.registerMap_n = new HashMap<Integer, PhysicalRegister>(this.regMapScreenshots.get(branch));
-		for (int i = 0; i < busyTableSnapshot.length; i++) {
-			busyTable_n[i] = busyTableSnapshot[i];
-		}
-		this.speculativeRegMap_n = new HashMap<Integer, PhysicalRegister>(this.registerMap_n);
+//		this.registerMap_n = new HashMap<Integer, PhysicalRegister>(this.regMapScreenshots.get(branch));
+//		for (int i = 0; i < busyTableSnapshot.length; i++) {
+//			busyTable_n[i] = busyTableSnapshot[i];
+//		}
+//		this.speculativeRegMap_n = new HashMap<Integer, PhysicalRegister>(this.registerMap_n);
 	}
 	
 	public BranchMask getBranchMask(){

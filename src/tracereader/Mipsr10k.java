@@ -49,6 +49,9 @@ public class Mipsr10k {
 	}
 	
 	private void calc(int cycleNum) {
+		if(cycleNum == 6) {
+			int a = 1;
+		}
 		instFetcher.calc(cycleNum);
 		this.intQueue.calc(cycleNum);
 		this.fpQueue.calc(cycleNum);

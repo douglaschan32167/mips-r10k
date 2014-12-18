@@ -14,12 +14,14 @@ public class ActiveList {
 	LinkedList<Instruction> instructionList_r;
 	HashMap<Instruction, PhysicalRegister> destRegisters;
 	HashMap<Instruction, PhysicalRegister> oldPhysRegs;
+	LinkedList<PhysicalRegister> purgedRegisters;
 	
 	public ActiveList() {
 		this.instructionList_r = new LinkedList<Instruction>();
 		this.instructionList_n = new LinkedList<Instruction>();
 		this.destRegisters = new HashMap<Instruction, PhysicalRegister>();
 		this.oldPhysRegs = new HashMap<Instruction, PhysicalRegister>();
+		this.purgedRegisters = new LinkedList<PhysicalRegister>();
 	}
 	
 	public ActiveList(ActiveList activeList) {
@@ -72,6 +74,10 @@ public class ActiveList {
 		return destRegisters.get(inst).getNumber();
 	}
 	
+	public PhysicalRegister getPhysRegDest(Instruction inst) {
+		return this.destRegisters.get(inst);
+	}
+	
 	public Instruction getFirstInstruction() {
 		return this.instructionList_n.peekFirst();
 	}
@@ -96,12 +102,18 @@ public class ActiveList {
 		return this.destRegisters;
 	}
 	
-	public List<Instruction> purgeMispredict(BranchInstruction branch){
+	public LinkedList<PhysicalRegister> getPurgedRegisters() {
+		return this.purgedRegisters;
+	}
+	
+	public LinkedList<Instruction> purgeMispredict(BranchInstruction branch){
 		LinkedList<Instruction> purgedInstructions = new LinkedList<Instruction>();
 		for(Instruction inst : instructionList_r) {
 			if(inst.dependsOn(branch)) {
 				this.instructionList_n.remove(inst);
-				this.destRegisters.remove(inst);
+				if(this.destRegisters.containsKey(inst)) {
+					this.purgedRegisters.add(this.destRegisters.remove(inst));
+				}
 				this.oldPhysRegs.remove(inst);
 				purgedInstructions.add(inst);
 			}
@@ -111,6 +123,7 @@ public class ActiveList {
 	
 	public void edge(){
 		this.instructionList_r = new LinkedList<Instruction>(this.instructionList_n);
+		this.purgedRegisters = new LinkedList<PhysicalRegister>();
 	}
 
 }

@@ -68,5 +68,9 @@ public class FpALU {
 		this.cyclesToCompletion_r = this.cyclesToCompletion_n;
 		this.hasExecuted = false;
 	}
+	
+	public void purgeMispredict() {
+		this.currInst = null;
+	}
 
 }
