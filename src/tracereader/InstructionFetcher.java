@@ -192,5 +192,9 @@ public class InstructionFetcher {
 		this.instructionsToIssue_n = new ArrayList<Instruction>();
 		this.instructionsRemaining_n.addFirst(branch);
 	}
+	
+	public boolean isDone() {
+		return this.instructionsRemaining_r.isEmpty() && this.instructionsToIssue_r.isEmpty() && this.fetchedInstructions_r.isEmpty();
+	}
 
 }

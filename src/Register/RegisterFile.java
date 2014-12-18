@@ -334,7 +334,7 @@ public class RegisterFile {
 			Instruction inst = purgedInstructions.removeLast();
 			this.busyTableScreenshots.remove(inst);
 			this.regMapScreenshots.remove(inst);
-			if(!inst.isStoreInstruction() || !inst.isBranchInstruction()) {
+			if(!inst.isStoreInstruction() && !inst.isBranchInstruction()) {
 				PhysicalRegister oldReg = oldDestCopy.get(inst);
 				if(inst.isLoadInstruction()) {
 					this.speculativeRegMap_n.put(inst.getRt(), oldReg);

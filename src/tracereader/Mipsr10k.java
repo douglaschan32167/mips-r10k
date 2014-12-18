@@ -32,7 +32,7 @@ public class Mipsr10k {
 	
 	public int execute() {
 		int numCycles = 0;
-		while(!regFile.isDone()) {
+		while(!isDone()) {
 			numCycles += 1;
 			if (numCycles >= 25) {
 				System.out.println("here is the breakpoint");
@@ -46,6 +46,10 @@ public class Mipsr10k {
 		printCommittedInstructions(numCycles);
 		return numCycles;
 		
+	}
+	
+	public boolean isDone() {
+		return this.regFile.isDone() && this.instFetcher.isDone();
 	}
 	
 	private void calc(int cycleNum) {
