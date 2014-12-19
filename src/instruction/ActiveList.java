@@ -8,7 +8,7 @@ import Register.PhysicalRegister;
 
 public class ActiveList {
 	
-	final int ACTIVE_LIST_SIZE = 32;
+	final int ACTIVE_LIST_SIZE = 32;//Change the reorder buffer size here!!!!!!!!
 	
 	LinkedList<Instruction> instructionList_n;
 	LinkedList<Instruction> instructionList_r;

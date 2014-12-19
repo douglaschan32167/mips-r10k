@@ -8,6 +8,8 @@ import Register.PhysicalRegister;
 
 public class BranchMask {
 	
+	final int BRANCH_MASK_SIZE = 4;
+	
 	LinkedList<BranchInstruction> unresolvedBranches_n;
 	LinkedList<BranchInstruction> unresolvedBranches_r;
 	HashMap<BranchInstruction, HashMap<Integer, PhysicalRegister>> regMapScreenshots;
@@ -35,7 +37,7 @@ public class BranchMask {
 	}
 	
 	public boolean isFull() {
-		return this.unresolvedBranches_n.size() >= 4;
+		return this.unresolvedBranches_n.size() >= this.BRANCH_MASK_SIZE;
 	}
 	
 	public boolean checkBranchDependency(BranchInstruction branch) {

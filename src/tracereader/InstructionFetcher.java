@@ -17,6 +17,9 @@ import java.util.LinkedList;
 import Register.RegisterFile;
 
 public class InstructionFetcher {
+	
+	final int DISPATCH_SIZE = 4;
+	
 	TraceReader traceReader;
 	ArrayList<Instruction> instructionList;
 	LinkedList<Instruction> instructionsRemaining_r;
@@ -99,7 +102,7 @@ public class InstructionFetcher {
 		}
 		for(int i = 0; i < instructionsToIssue_r.size(); i++) {
 
-			if(numDecoded == 4) {
+			if(numDecoded == DISPATCH_SIZE) {
 				break;
 			}
 			Instruction nextInstruction = instructionsToIssue_r.get(i);

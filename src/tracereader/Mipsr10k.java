@@ -30,19 +30,25 @@ public class Mipsr10k {
 
 	}
 	
+	public static void main(String[] args) {
+		System.out.println(args);
+		if(args.length == 0) {
+			System.err.println("You must specify an in put file");
+			System.exit(1);
+		}
+		Mipsr10k processor = new Mipsr10k(args[0]);
+		processor.execute();
+	}
+	
 	public int execute() {
 		int numCycles = 0;
 		while(!isDone()) {
 			numCycles += 1;
-			if (numCycles >= 25) {
-				System.out.println("here is the breakpoint");
-				
-			}
-			System.out.println("cycle " + String.valueOf(numCycles));
+//			System.out.println("cycle " + String.valueOf(numCycles));
 			calc(numCycles);
 			edge();
 		}
-		System.out.println("Put the breakpoint here");
+//		System.out.println("Put the breakpoint here");
 		printCommittedInstructions(numCycles);
 		return numCycles;
 		
@@ -53,9 +59,6 @@ public class Mipsr10k {
 	}
 	
 	private void calc(int cycleNum) {
-		if(cycleNum == 6) {
-			int a = 1;
-		}
 		instFetcher.calc(cycleNum);
 		this.intQueue.calc(cycleNum);
 		this.fpQueue.calc(cycleNum);

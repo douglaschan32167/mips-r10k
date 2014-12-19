@@ -150,6 +150,10 @@ public class AddressQueue {
 					}
 				}
 				isFirstStore = false;
+			} else {
+				if(inst.isStoreInstruction()) {
+					isFirstStore = false;
+				}
 			}
 		}
 	}
