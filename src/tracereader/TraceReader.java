@@ -35,13 +35,9 @@ public class TraceReader {
 			String nextLine = this.traceReader.readLine();
 			int lineNumber = 1;
 			while (nextLine != null) {
-//				System.out.println(nextLine);
 				String[] nextCmdArray = nextLine.split(" ");
-				System.out.println(nextCmdArray.length);
 				String extraField = nextCmdArray.length == 4 ? "" : nextCmdArray[4];
 				int rd = nextCmdArray[3].equals("xx") || nextCmdArray[3].equals("XX") ? 0 : Integer.parseInt(nextCmdArray[3], 16);
-//				System.out.println(extraField);
-//				System.out.println("is the extra field");
 
 				Instruction nextInstruction = new Instruction(
 						nextCmdArray[0],
@@ -50,7 +46,6 @@ public class TraceReader {
 						rd,
 						extraField,
 						lineNumber);
-//				System.out.println("the next line is" + nextLine);
 				nextInstruction.setInstString(nextLine.toString());
 				result.add(nextInstruction);
 				nextLine = this.traceReader.readLine();

@@ -44,11 +44,9 @@ public class Mipsr10k {
 		int numCycles = 0;
 		while(!isDone()) {
 			numCycles += 1;
-//			System.out.println("cycle " + String.valueOf(numCycles));
 			calc(numCycles);
 			edge();
 		}
-//		System.out.println("Put the breakpoint here");
 		printCommittedInstructions(numCycles);
 		return numCycles;
 		

@@ -63,7 +63,6 @@ public class RegisterFile {
 		}
 		//Set r0 to be the 0 physical register, which should never change
 		PhysicalRegister a = freeList_r.remove();
-//		System.out.println("register logical 0 is mapped to " + String.valueOf(a.getNumber()));
 		registerMap_r.put(0, a);
 		for (int i = 0; i < 31; i++) {
 			registerMap_r.put(i+1, freeList_r.remove());
@@ -108,7 +107,6 @@ public class RegisterFile {
 				} else if(nextInstruction.isLoadInstruction()) {
 					PhysicalRegister[] prs = this.activeList_n.commitInstruction(nextInstruction);
 					this.instructionsReadyForCommit_n.remove(nextInstruction);
-//					System.out.println("committed load");
 					freeList_n.add(prs[1]);
 					physRegDependencies.remove(nextInstruction);
 					registerMap_n.put(nextInstruction.getRt(), prs[0]);
@@ -130,18 +128,15 @@ public class RegisterFile {
 		int physDestNum = activeList_r.getPhysicalDestinationNum(inst);
 		busyTable_n[physDestNum] = true;
 		instructionsReadyForCommit_n.add(inst);
-//		System.out.println("Instruction ready for commit" + inst.getString());
 	}
 	
 	public void setStoreReadyForCommit(StoreInstruction storeInst){
 		instructionsReadyForCommit_n.add(storeInst);
-//		System.out.println("Instruction ready for commit" + storeInst.getString());
 	}
 	
 	public void setBranchReadyForCommit(BranchInstruction branch) {
 //		this.branchMask.commitBranch(branch); 
 		instructionsReadyForCommit_n.add(branch);
-//		System.out.println("Branch ready for commit" + branch.getString() + " " + String.valueOf(branch.getLineNumber()) + " " + branch.getExtraField());
 	}
 	
 	public void removeFromBranchMask(BranchInstruction branch) {
@@ -152,7 +147,6 @@ public class RegisterFile {
 //		int physDestNum = activeList_r.getPhysicalDestinationNum(fpInst);
 //		busyTable_n[physDestNum] = true;
 		packingFpInstructions_n.add(fpInst);
-//		System.out.println("ready to pack" + fpInst.getString());
 	}
 	
 	public void setFpIsExecuting(FpInstruction fpInst){
@@ -185,8 +179,6 @@ public class RegisterFile {
 		List<Integer> physDeps = physRegDependencies.get(inst);
 		for(Integer i : physDeps) {
 			if(!busyTable_r[i]) {
-//				System.out.println("register not ready" + String.valueOf(i));
-//				System.out.println(inst.getString());
 				return false;
 			}
 		}
@@ -235,7 +227,6 @@ public class RegisterFile {
 		PhysicalRegister pr = freeList_n.remove();
 		PhysicalRegister oldPr = speculativeRegMap_n.get(loadInst.getRt());
 		ArrayList<Integer> physDeps = new ArrayList<Integer>();
-//		physDeps.add(speculativeRegMap_n.get(loadInst.getRt()).getNumber());//TODO: Is this necessary
 		physDeps.add(speculativeRegMap_n.get(loadInst.getRs()).getNumber());
 		System.out.println("setting bt " + String.valueOf(pr.getNumber()));
 		if(activeList_n.add(loadInst, pr, oldPr)){

@@ -33,14 +33,12 @@ public class InstructionFetcher {
 	ArrayList<String> storeCodes;
 	ArrayList<String> intCodes;
 	ArrayList<String> branchCodes;
-//	BranchMask branchMask;
 	IntegerQueue intQueue;
 	FpQueue fpQueue;
 	AddressQueue addressQueue;
 	RegisterFile regFile;
 	
 	public InstructionFetcher(String tracePath, IntegerQueue intQueue, FpQueue fpQueue, AddressQueue addressQueue, RegisterFile regFile) {
-//		this.branchMask = new BranchMask();
 		this.traceReader = new TraceReader(tracePath);
 		this.instructionList = this.traceReader.readTrace();
 		this.instructionsRemaining_r = new LinkedList<Instruction>(instructionList);
@@ -92,7 +90,6 @@ public class InstructionFetcher {
 		
 	}
 	
-	//TODO: Change this to actually check if the int queue is full and if the activelist is full
 	public void calc(int cycleNum) {
 		int numDecoded = 0;
 		if(this.regFile.mustPurgeMispredict()) {
@@ -122,7 +119,6 @@ public class InstructionFetcher {
 					instructionsToIssue_n.remove(nextInstruction);
 					numDecoded += 1;
 				}
-				//TODO: Should I break?
 			} else if(loadCodes.contains(nextInstruction.getOp())) {
 				LoadInstruction loadInst = new LoadInstruction(nextInstruction);
 				loadInst.setBranchDependencies(regFile.getBranchMask().getBranchDependencies());
@@ -156,9 +152,6 @@ public class InstructionFetcher {
 				System.err.println("Instruction not supported yet" + nextInstruction.getOp());
 				System.exit(1);
 			}
-//			if (intQueue.addInstruction(nextInstruction)) {
-//				instructionsToIssue_n.remove(nextInstruction);
-//			}
 		}
 		if (this.regFile.mustPurgeMispredict()) {
 			return;
